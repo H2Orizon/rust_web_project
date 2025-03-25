@@ -3,5 +3,5 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ message }}</h1>
+    <h1>hi world</h1>
 {% endblock %}

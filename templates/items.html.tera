@@ -1,0 +1,10 @@
+{% extends "base" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    {% for item in products %}
+        <li>{{ item }}</li>
+    {% endfor %}
+{% endblock %}
