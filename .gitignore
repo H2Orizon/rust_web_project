@@ -2,7 +2,7 @@
 **/*.rs.bk
 
 Cargo.lock
-
+.gitignore
 .vscode/
 .idea/
 *.iml
