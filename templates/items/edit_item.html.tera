@@ -1,0 +1,18 @@
+{% extends "base" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h1>Edit item {{title}}</h1>
+<form action="" method="post">
+    <input type="text"> <!-- Name -->
+    <input type="text"> <!-- Price -->
+    <textarea name="" id=""></textarea> <!-- Description -->
+    <select name="" id="">  <!-- Category -->
+        <option value="food">Food</option>
+        <option value="household_appliances">Household appliances</option>
+        <option value="headphones">Навушники</option>
+    </select>
+    <input type="submit" value="Add">
+</form>
+{% endblock %}
