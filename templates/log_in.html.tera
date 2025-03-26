@@ -1,0 +1,11 @@
+{% extends "base" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>Log in</h1>
+    <form action="/log_in" method="post">
+        <input type="text">
+        <input type="password">
+        <input type="submit" value="Log in">
+    </form>
+{% endblock %}
