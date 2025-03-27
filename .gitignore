@@ -4,6 +4,11 @@ migration/target/
 
 Cargo.lock
 
+/database.sqlite
+/*.db
+/*.db-shm
+/*.db-wal
+
 .env
 .vscode/
 .idea/
