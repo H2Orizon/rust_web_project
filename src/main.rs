@@ -2,12 +2,17 @@
 use controllers::{items::{creat, item_edit, patch_item_edit, post_creat}, user::{log_out, post_log_in, post_register, profile, register}};
 use rocket::fs::FileServer;
 use rocket_dyn_templates::Template;
+use crate::db::connect;
 
 mod controllers;
 mod services;
+mod db;
+
 
 #[launch]
-fn rocket() -> _{
+async  fn rocket() -> _{
+    let db = connect().await;
+
     rocket::build()
     .mount("/", routes![
             controllers::home::index
@@ -23,4 +28,5 @@ fn rocket() -> _{
     ])
     .mount("/static", FileServer::from("static"))
     .attach(Template::fairing())
+    .manage(db).mount("/", routes![])
 }

@@ -1,8 +1,10 @@
 /target/
 **/*.rs.bk
+migration/target/
 
 Cargo.lock
 
+.env
 .vscode/
 .idea/
 *.iml
