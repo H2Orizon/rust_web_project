@@ -1,21 +1,32 @@
 use sea_orm::entity::prelude::*;
+use rocket::form::FromForm;
 
-#[derive(Clone,Debag,DeriveEntityModel)]
-#[sea_orm(table_name = "users")]
-pub struct Model{
+#[derive(Clone, Debug, DeriveEntityModel)]
+#[sea_orm(table_name = "user")]
+pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub username: String,
     pub email: String,
-    pub phon_num: String,
-    pub role: String
+    pub password: String,
+    pub phone_num: String,
+    pub role: String,
+}
+
+#[derive(FromForm)]
+pub struct NewUserForm {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+    pub phone_num: String,
+    pub role: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter)]
 pub enum Relation {}
 
-impl Related<super::user::Entity> for Relation {
-    fn to() -> RelationDef {
+impl RelationTrait for Relation {
+    fn def(&self) -> RelationDef {
         unimplemented!()
     }
 }

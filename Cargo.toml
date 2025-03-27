@@ -11,6 +11,9 @@ dotenvy = "0.15"
 tokio = { version = "1", features = ["full"] }
 sea-orm = { version = "1.1.7", features = ["sqlx-sqlite", "runtime-tokio-rustls"] }
 sea-orm-migration = { version = "1.1.7", features = ["sqlx-sqlite"] }
+thiserror = "1.0"
+argon2 = "0.5"
+rand_core = { version = "0.6", features = ["std"] }
 
 [workspace]
 members = ["migration"]

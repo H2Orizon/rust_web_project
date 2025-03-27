@@ -1,7 +1,7 @@
 use rocket::response::Redirect;
 use rocket_dyn_templates::{Template,context};
 
-use crate::services::{self, product_service};
+use crate::services::{self};
 
 #[get("/items")]
 pub fn get_items() -> Template {

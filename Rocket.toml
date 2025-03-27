@@ -3,3 +3,6 @@ port = 8000
 
 [debug]
 databases.sqlite.path = "database.sqlite"
+
+[default.databases]
+sqlite_db = { url = "sqlite://my_database.db" }

@@ -1,5 +1,8 @@
 use rocket_dyn_templates::{Template,context};
-use rocket::response::Redirect;
+use rocket::State;
+use rocket::{form::Form, response::Redirect};
+use sea_orm::DatabaseConnection;
+use crate::{models::user_model::NewUserForm, services::user_service};
 
 #[get("/log_in")]
 pub fn log_in() -> Template {
@@ -16,9 +19,15 @@ pub fn register() -> Template {
     Template::render("user/register", context! {title:"Register"})
 }
 
-#[post("/register")]
-pub fn post_register() -> Redirect{
-    Redirect::to(uri!(log_in))
+#[post("/register", data = "<form_data>")]
+pub async fn post_register(
+    db: &State<DatabaseConnection>, 
+    form_data: Form<NewUserForm>
+) -> Redirect {
+    match user_service::creat_user(db.inner(), &form_data).await {
+        Ok(_) => Redirect::to("/profile"),
+        Err(_) => Redirect::to("/error"),
+    }
 }
 
 #[get("/profile")]

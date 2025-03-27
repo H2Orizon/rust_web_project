@@ -6,14 +6,16 @@ use crate::db::connect;
 
 mod controllers;
 mod services;
+mod models;
 mod db;
 
 
 #[launch]
 async  fn rocket() -> _{
-    let db = connect().await;
+    let db = connect().await.expect("Помилка підключення до БД");
 
     rocket::build()
+    .manage(db)
     .mount("/", routes![
             controllers::home::index
             ,controllers::items::get_items, creat
@@ -28,5 +30,4 @@ async  fn rocket() -> _{
     ])
     .mount("/static", FileServer::from("static"))
     .attach(Template::fairing())
-    .manage(db).mount("/", routes![])
 }
