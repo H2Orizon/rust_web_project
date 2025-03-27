@@ -1,8 +1,9 @@
 [default]
 port = 8000
+secret_key = "b9a8f3d1c5e2a7b3f6c9d4a2e1b8c7d6a9e4c3b2f5d7a1c8b6e3f9d2a4b7c8e3"
 
 [debug]
 databases.sqlite.path = "database.sqlite"
 
 [default.databases]
-sqlite_db = { url = "sqlite://my_database.db" }
+sqlite_db = { url = "sqlite://my_database.db"}

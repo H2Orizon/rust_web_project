@@ -1,5 +1,6 @@
 use sea_orm::entity::prelude::*;
 use rocket::form::FromForm;
+use serde::Serialize;
 
 #[derive(Clone, Debug, DeriveEntityModel)]
 #[sea_orm(table_name = "user")]
@@ -18,6 +19,20 @@ pub struct NewUserForm {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub phone_num: String,
+    pub role: String,
+}
+
+#[derive(FromForm)]
+pub struct LogInUserForm {
+    pub email: String,
+    pub password: String
+}
+
+#[derive(Serialize)]
+pub struct UserDTO {
+    pub username: String,
+    pub email: String,
     pub phone_num: String,
     pub role: String,
 }

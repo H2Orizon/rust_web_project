@@ -3,8 +3,7 @@
 migration/target/
 
 Cargo.lock
-
-/database.sqlite
+database.sqlite
 /*.db
 /*.db-shm
 /*.db-wal
