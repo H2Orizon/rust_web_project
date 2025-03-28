@@ -13,6 +13,7 @@ impl MigratorTrait for Migrator {
             Box::new(migrations::m20250326_191821_create_users_table::Migration),
             Box::new(migrations::m20250327_114612_rename_phon_num_to_phone_num::Migration),
             Box::new(migrations::m20250327_120459_add_password_to_user::Migration),
+            Box::new(migrations::m20250328_124122_create_categories_table_and_item_table::Migration)
         ]
     }
 }

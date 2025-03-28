@@ -4,5 +4,8 @@
 
 {% block content %}
     <h1>{{ title }}</h1>
-    <p>Ваш профіль</p>
+    <p>Ваш профіль {{username}}</p>
+    <p>Ваш пошта {{email}}</p>
+    <p>Ваш номир телефону {{phone_num}}</p>
+    <p>Ваша роль {{role}}</p>
 {% endblock %}
