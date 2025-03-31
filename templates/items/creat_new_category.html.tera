@@ -1,0 +1,13 @@
+{% extends "base" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>Add new category</h1>
+    <form action="/items/create_category" method="post">
+    
+        <label for="category_name">Category:</label>
+        <input type="text" id="category_name" name="name" required><br><br>
+    
+        <button type="submit">Додати</button>
+    </form>
+{% endblock %}

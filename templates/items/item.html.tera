@@ -1,9 +1,11 @@
 {% extends "base" %}
 
-{% block title %}{{ title }}{% endblock %}
+{% block title %}{{ item.name }}{% endblock %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
-
-    <p>Деякий опис</p>
+    <h1>{{ item.name }}</h1>
+    
+    <p>Опис: <br>{{ item.description }}</p>
+    <p>Ціна: {{ item.price }}</p>
+    <p>Категорія: {{ item.category }}</p>
 {% endblock %}

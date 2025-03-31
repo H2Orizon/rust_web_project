@@ -8,4 +8,10 @@
     <p>Ваш пошта {{email}}</p>
     <p>Ваш номир телефону {{phone_num}}</p>
     <p>Ваша роль {{role}}</p>
+
+    <a href="/user/edit_profile">Редагування профілю</a>
+
+    <form action="/log_out" method="post">
+        <input type="submit" value="Вийти">
+    </form>
 {% endblock %}

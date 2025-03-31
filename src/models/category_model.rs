@@ -4,9 +4,20 @@ use serde::Serialize;
 use crate::models::item_model;
 
 #[derive(Clone, Debug, DeriveEntityModel)]
-#[sea_orm(table_name = "categories")]
+#[sea_orm(table_name = "category")]
 pub struct Model{
     #[sea_orm(primary_key)]
+    pub id: i32,
+    pub name: String
+}
+
+#[derive(FromForm)]
+pub struct NewCategory{
+    pub name: String
+}
+
+#[derive(Serialize)]
+pub struct CategoryDTO{
     pub id: i32,
     pub name: String
 }

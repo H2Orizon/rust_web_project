@@ -5,6 +5,6 @@
 {% block content %}
     <h1>{{ title }}</h1>
     {% for item in products %}
-        <li>{{ item }}</li>
+        <p><a href="{{item.link_to}}">{{ item.name }}</a></p>
     {% endfor %}
 {% endblock %}

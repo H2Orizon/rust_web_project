@@ -1,6 +1,14 @@
 use sea_orm::entity::prelude::*;
 use rocket::form::FromForm;
 use serde::Serialize;
+use crate::models::item_model;
+
+
+enum Roles {
+    ADMIN,
+    USER,
+    SELLER
+}
 
 #[derive(Clone, Debug, DeriveEntityModel)]
 #[sea_orm(table_name = "user")]
@@ -11,7 +19,7 @@ pub struct Model {
     pub email: String,
     pub password: String,
     pub phone_num: String,
-    pub role: String,
+    pub role: String
 }
 
 #[derive(FromForm)]
@@ -19,6 +27,14 @@ pub struct NewUserForm {
     pub username: String,
     pub email: String,
     pub password: String,
+    pub phone_num: String,
+    pub role: String,
+}
+
+#[derive(FromForm)]
+pub struct EditUserForm {
+    pub username: String,
+    pub email: String,
     pub phone_num: String,
     pub role: String,
 }
@@ -37,12 +53,15 @@ pub struct UserDTO {
     pub role: String,
 }
 
-#[derive(Copy, Clone, Debug, EnumIter)]
-pub enum Relation {}
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {
+    #[sea_orm(has_many = "crate::models::item_model::Entity")]
+    Item,
+}
 
-impl RelationTrait for Relation {
-    fn def(&self) -> RelationDef {
-        unimplemented!()
+impl Related<item_model::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Item.def()
     }
 }
 
