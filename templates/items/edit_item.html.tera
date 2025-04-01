@@ -3,15 +3,16 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h1>Edit item {{title}}</h1>
-<form action="" method="post">
-    <input type="text"> <!-- Name -->
-    <input type="text"> <!-- Price -->
-    <textarea name="" id=""></textarea> <!-- Description -->
-    <select name="" id="">  <!-- Category -->
-        <option value="food">Food</option>
-        <option value="household_appliances">Household appliances</option>
-        <option value="headphones">Навушники</option>
+<h1>{{title}}</h1>
+<form action="/items/{{item_id}}/item_edit" method="post">
+    <input type="hidden" name="_method" value="PATCH">
+    <input id="name" name="name" type="text">
+    <input id="price" name="price" type="text">
+    <textarea name="description" id="description"></textarea>
+    <select name="category_id" id="category_id">
+        {% for category in categories %}
+            <option value={{category.id}}>{{category.name}}</option>
+        {% endfor %}
     </select>
     <input type="submit" value="Add">
 </form>

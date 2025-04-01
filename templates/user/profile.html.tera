@@ -11,7 +11,7 @@
 
     <a href="/user/edit_profile">Редагування профілю</a>
 
-    <form action="/log_out" method="post">
+    <form action="/profile/log_out" method="post">
         <input type="submit" value="Вийти">
     </form>
 {% endblock %}

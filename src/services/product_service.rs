@@ -2,7 +2,7 @@ use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrai
 use thiserror::Error;
 
 use crate::models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
-        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}};
+        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm, Model as ItemModel}};
 
 #[derive(Debug, Error)]
 pub enum ItemError {
@@ -26,6 +26,7 @@ pub async fn get_all_item(db: &DatabaseConnection) -> Result<Vec<ItemDTO>, sea_o
             price: itm.price,
             description: itm.description,
             link_to: format!("/items/{}", itm.id),
+            user_id: itm.user_id 
         });
     }
     Ok(item_dtos)
@@ -40,7 +41,7 @@ pub async fn get_one_item(db: &DatabaseConnection, item_id: i32) -> Result<ItemD
     .await.map_err(|err| ItemError::DatabaseError(err))?
     .ok_or(ItemError::ItemNotFound)?;
     let category = category_to_string(db,item.id).await;
-    Ok(ItemDTO { id: item.id, name: item.name, category: category, price: item.price, description: item.description, link_to: "".to_string() })
+    Ok(ItemDTO { id: item.id, name: item.name, category: category, price: item.price, description: item.description, link_to: "".to_string(), user_id: item.user_id })
 }
 
 pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory) -> Result<(), ItemError> {
@@ -101,3 +102,18 @@ pub async fn get_category(db: &DatabaseConnection, category_id: i32) -> Result<C
     Ok(CategoryDTO { id: category.id, name: category.name })
 }
     
+pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewItemForm) -> Result<(), ItemError> {
+    let item = ItemEntity::find_by_id(item_id)
+    .one(db)
+    .await
+    .map_err(ItemError::DatabaseError)?
+    .ok_or(ItemError::ItemNotFound)?;
+    let mut up_item: ActiveModelItem = item.into();
+    up_item.name = Set(form_data.name.clone());
+    up_item.category_id = Set(form_data.category_id);
+    up_item.price = Set(form_data.price);
+    up_item.description = Set(form_data.description.clone());
+
+    up_item.update(db).await.map_err(ItemError::DatabaseError)?;
+    Ok(())
+}

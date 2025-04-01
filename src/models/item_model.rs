@@ -30,7 +30,8 @@ pub struct ItemDTO{
     pub category: String,
     pub price: f32,
     pub description: String,
-    pub link_to: String
+    pub link_to: String,
+    pub user_id: i32
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

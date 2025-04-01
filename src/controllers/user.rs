@@ -67,7 +67,7 @@ pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) ->
     }
 }
 
-#[post("/profile")]
+#[post("/profile/log_out")]
 pub fn log_out(cookies: &CookieJar<'_>) -> Redirect{
     cookies.remove_private("user_id");
     Redirect::to(uri!(crate::controllers::home::index))
