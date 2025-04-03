@@ -2,7 +2,8 @@ use rocket::{form::Form, http::CookieJar, response::Redirect, State};
 use rocket_dyn_templates::{Template,context};
 use sea_orm::DatabaseConnection;
 
-use crate::{models::{category_model::NewCategory, item_model::NewItemForm}, services::product_service::{creat_new_item, create_category_f, get_all_categoris, get_all_item, get_one_item, update_item}};
+use crate::{models::{category_model::NewCategory, item_model::NewItemForm}, 
+services::product_service::{creat_new_item, create_category_f, get_all_categoris, get_all_item, get_one_item, update_item}};
 
 #[get("/items")]
 pub async fn get_items(db: &State<DatabaseConnection>) -> Template {

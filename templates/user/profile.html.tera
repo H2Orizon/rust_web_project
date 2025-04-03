@@ -10,6 +10,7 @@
     <p>Ваша роль {{role}}</p>
 
     <a href="/user/edit_profile">Редагування профілю</a>
+    <a href="/user/change_password">Змінити пароль</a>
 
     <form action="/profile/log_out" method="post">
         <input type="submit" value="Вийти">

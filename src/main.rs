@@ -1,7 +1,7 @@
 #[macro_use] extern crate rocket;
 
 use controllers::items::{create, create_category, get_item, get_items, item_edit, patch_item_edit, post_create, post_create_category};
-use controllers::user::{edit_profile, get_all_user, log_in, log_out, patch_edit_profile, post_log_in, post_register, profile, register};
+use controllers::user::{change_password, edit_profile, get_all_user, log_in, log_out, patch_change_password, patch_edit_profile, post_log_in, post_register, profile, register};
 use controllers::home::index;
 use rocket::fs::FileServer;
 use rocket::Config;
@@ -36,6 +36,7 @@ async fn rocket() -> _ {
         ])
         .mount("/user/", routes![
             edit_profile, patch_edit_profile
+            ,change_password,patch_change_password
         ])
         .mount("/static", FileServer::from("static"))
         .attach(Template::fairing())

@@ -3,8 +3,8 @@ use rocket::http::{Cookie, CookieJar};
 use rocket::State;
 use rocket::{form::Form, response::Redirect};
 use sea_orm::DatabaseConnection;
-use crate::models::user_model::{EditUserForm, LogInUserForm};
-use crate::services::user_service::{edit_profile_f, get_all_users, get_user_profile};
+use crate::models::user_model::{ChangePasswordForm, EditUserForm, LogInUserForm};
+use crate::services::user_service::{change_password_f, edit_profile_f, get_all_users, get_user_profile};
 use crate::{models::user_model::NewUserForm, services::user_service::{create_user, log_in as log_inF}};
 
 #[get("/log_in")]
@@ -84,8 +84,13 @@ pub async fn get_all_user(db: &State<DatabaseConnection>) -> Template {
 }
 
 #[get("/edit_profile")]
-pub fn edit_profile() -> Template {
-    Template::render("user/edit_profile", context!{title:"edit_profile"})
+pub fn edit_profile(cookies: &CookieJar<'_>) -> Template {
+    if let Some(user_id_cookie) = cookies.get_private("user_id"){
+        if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
+            return Template::render("user/edit_profile", context!{title:"edit_profile"});
+        }
+    }
+    Template::render("error/403", context! { message: "Invalid session" })
 }
 
 #[patch("/edit_profile", data = "<from_data>")]
@@ -95,6 +100,29 @@ pub async fn patch_edit_profile(db: &State<DatabaseConnection>, cookies: &Cookie
             match edit_profile_f(db, user_id, &from_data).await {
                 Ok(_) => return Redirect::to(uri!(profile)),
                 Err(_) => return Redirect::to(uri!(edit_profile))
+            }
+        }
+    }
+    Redirect::to(uri!(log_in))
+}
+
+#[get("/change_password")]
+pub fn change_password(cookies: & CookieJar<'_>) -> Template{
+    if let Some(user_id_cookie) = cookies.get_private("user_id"){
+        if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
+            return Template::render("user/change_password", context!{title:"Зміна пароля"});
+        }
+    }
+    Template::render("error/403", context! { message: "Invalid session" })
+}
+
+#[patch("/change_password", data = "<form_data>")]
+pub async fn patch_change_password(db: &State<DatabaseConnection>, cookies: & CookieJar<'_>, form_data: Form<ChangePasswordForm>) -> Redirect {
+    if let Some(user_id_cookie) = cookies.get_private("user_id"){
+        if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
+            match change_password_f(db, &form_data.into_inner(), user_id).await {
+                Ok(_) => return Redirect::to(uri!(profile)),
+                Err(_) => return Redirect::to(uri!(change_password))
             }
         }
     }

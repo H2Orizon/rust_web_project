@@ -40,6 +40,13 @@ pub struct EditUserForm {
 }
 
 #[derive(FromForm)]
+pub struct ChangePasswordForm {
+    pub old_password: String,
+    pub new_password: String,
+    pub new_password_confirm: String
+}
+
+#[derive(FromForm)]
 pub struct LogInUserForm {
     pub email: String,
     pub password: String

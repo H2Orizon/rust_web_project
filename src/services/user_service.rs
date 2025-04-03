@@ -1,5 +1,5 @@
-use crate::models::user_model::{ActiveModel, EditUserForm, Entity as User, LogInUserForm, Model as UserModel, NewUserForm, UserDTO};
-use argon2::{Argon2, PasswordHasher, PasswordVerifier, PasswordHash};
+use crate::models::user_model::{ActiveModel, ChangePasswordForm, EditUserForm, Entity as User, LogInUserForm, Model as UserModel, NewUserForm, UserDTO};
+use argon2::{ Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::{SaltString, rand_core::OsRng};
 use sea_orm::{Set, ActiveModelTrait, DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait};
 use thiserror::Error;
@@ -12,6 +12,17 @@ pub enum UserError {
     UserNotFound,
     #[error("Invalid password")]
     InvalidPassword,
+    #[error("PasswordsDoNotMatch")]
+    PasswordsDoNotMatch,
+}
+
+fn verify_password(password: &str, hash: &str) -> bool {
+    let argon2 = Argon2::default();
+    if let Ok(parsed_hash) = PasswordHash::new(hash){
+        argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok()
+    } else {
+        false
+    }
 }
 
 pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Result<(), UserError>{
@@ -41,6 +52,27 @@ pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Re
     }
 }
 
+pub async fn change_password_f(db: &DatabaseConnection,form_data: &ChangePasswordForm, user_id: i32) -> Result<(), UserError> {
+    let salt = SaltString::generate(&mut OsRng);
+    let argon = Argon2::default();
+    let user = User::find_by_id(user_id).one(db).await
+    .map_err(|err| UserError::DatabaseError(err))?
+    .ok_or(UserError::UserNotFound)?;
+    if !verify_password(&form_data.old_password, &user.password) {
+        return Err(UserError::InvalidPassword);
+    }
+    if form_data.new_password != form_data.new_password_confirm {
+        return Err(UserError::PasswordsDoNotMatch);
+    }
+    let password_hash = argon.hash_password(form_data.new_password.as_bytes(), &salt)
+    .map_err(|_| UserError::DatabaseError(sea_orm::DbErr::Custom("Password hashing failed".to_string())))?
+    .to_string();
+    let mut user_edit: ActiveModel = user.into();
+    user_edit.password = Set(password_hash);
+    user_edit.update(db).await.map_err(UserError::DatabaseError)?;
+    Ok(())
+}
+
 pub async fn log_in(db: &DatabaseConnection, form_data: &LogInUserForm) -> Result<UserModel, UserError> {
     let user = User::find()
         .filter(<User as EntityTrait>::Column::Email.eq(form_data.email.clone()))
@@ -54,15 +86,6 @@ pub async fn log_in(db: &DatabaseConnection, form_data: &LogInUserForm) -> Resul
         }
     } else {
         Err(UserError::UserNotFound)
-    }
-}
-
-fn verify_password(password: &str, hash: &str) -> bool {
-    let argon2 = Argon2::default();
-    if let Ok(parsed_hash) = PasswordHash::new(hash){
-        argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok()
-    } else {
-        false
     }
 }
 
