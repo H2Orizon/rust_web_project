@@ -1,8 +1,8 @@
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection, EntityTrait};
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 use thiserror::Error;
 
 use crate::models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
-        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm, Model as ItemModel}};
+        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}};
 
 #[derive(Debug, Error)]
 pub enum ItemError {
@@ -101,7 +101,7 @@ pub async fn get_category(db: &DatabaseConnection, category_id: i32) -> Result<C
     .ok_or(ItemError::CategoryNotFound)?;
     Ok(CategoryDTO { id: category.id, name: category.name })
 }
-    
+
 pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewItemForm) -> Result<(), ItemError> {
     let item = ItemEntity::find_by_id(item_id)
     .one(db)
@@ -115,5 +115,10 @@ pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewI
     up_item.description = Set(form_data.description.clone());
 
     up_item.update(db).await.map_err(ItemError::DatabaseError)?;
+    Ok(())
+}
+
+pub async fn delete_item_f(db: &DatabaseConnection, item_id: i32) -> Result<(), DbErr> {
+    let _item = ItemEntity::delete_by_id(item_id).exec(db).await?;
     Ok(())
 }

@@ -3,12 +3,12 @@ use rocket_dyn_templates::{Template,context};
 use sea_orm::DatabaseConnection;
 
 use crate::{models::{category_model::NewCategory, item_model::NewItemForm}, 
-services::product_service::{creat_new_item, create_category_f, get_all_categoris, get_all_item, get_one_item, update_item}};
+services::product_service::{creat_new_item, create_category_f, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}};
 
 #[get("/items")]
 pub async fn get_items(db: &State<DatabaseConnection>) -> Template {
     let items = get_all_item(db).await.unwrap_or_default();
-    Template::render("items/items", context! {title:"Items", products:items})
+    Template::render("items/items", context! {title:"Items", items:items})
 }
 
 #[get("/create_category")]
@@ -27,7 +27,7 @@ pub async fn post_create_category(db: &State<DatabaseConnection>, form_data: For
 #[get("/<item_id>")]
 pub async fn get_item(db: &State<DatabaseConnection>, item_id: i32) -> Template {
     match get_one_item(db,item_id).await{
-        Ok(item) => Template::render("items/item", context! {item: item }),
+        Ok(item) => Template::render("items/item", context! {item: item, item_id:item_id  }),
         Err(_) => Template::render("error/403", context! { message: "Invalid session" }),
     }
 }
@@ -81,5 +81,13 @@ pub async fn patch_item_edit( db: &State<DatabaseConnection>, item_id: i32, form
         Err(_) => {
             return Redirect::to(uri!(get_item(item_id)));
         }
+    }
+}
+
+#[delete("/<item_id>/delete")]
+pub async fn delete_item(db: &State<DatabaseConnection>,item_id: i32) -> Redirect {
+    match delete_item_f(db, item_id).await {
+        Ok(_) => return Redirect::to(uri!(get_items)),
+        Err(_) => return Redirect::to(format!("/items/{}",item_id))
     }
 }

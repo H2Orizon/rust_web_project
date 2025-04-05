@@ -1,6 +1,8 @@
 /target/
 **/*.rs.bk
 migration/target/
+uploads/user_img/*
+uploads/item_img/*
 
 Cargo.lock
 database.sqlite

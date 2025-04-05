@@ -4,13 +4,19 @@
 
 {% block content %}
     <h1>{{ title }}</h1>
-    <p>Ваш профіль {{username}}</p>
-    <p>Ваш пошта {{email}}</p>
-    <p>Ваш номир телефону {{phone_num}}</p>
-    <p>Ваша роль {{role}}</p>
+    <img src="/uploads/{{ user.img_url }}" onerror="this.src='/uploads/default/default_user_img.png'" alt="Avatar">
+    <p>Ваш профіль {{user.username}}</p>
+    <p>Ваш пошта {{user.email}}</p>
+    <p>Ваш номир телефону {{user.phone_num}}</p>
+    <p>Ваша роль {{user.role}}</p>
 
     <a href="/user/edit_profile">Редагування профілю</a>
     <a href="/user/change_password">Змінити пароль</a>
+
+    <form action="/user/add_img" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="file">
+        <input type="submit" value="Додадти картинку">
+    </form>
 
     <form action="/profile/log_out" method="post">
         <input type="submit" value="Вийти">

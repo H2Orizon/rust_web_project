@@ -8,4 +8,9 @@
     <p>Опис: <br>{{ item.description }}</p>
     <p>Ціна: {{ item.price }}</p>
     <p>Категорія: {{ item.category }}</p>
+    
+    <form action="/items/{{item_id}}/delete" method="post">
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="submit" value="Видалити">
+    </form>
 {% endblock %}

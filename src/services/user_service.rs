@@ -4,6 +4,8 @@ use argon2::password_hash::{SaltString, rand_core::OsRng};
 use sea_orm::{Set, ActiveModelTrait, DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait};
 use thiserror::Error;
 
+use super::help_service::delete_image;
+
 #[derive(Debug, Error)]
 pub enum UserError {
     #[error("Failed to insert user into database")]
@@ -55,9 +57,7 @@ pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Re
 pub async fn change_password_f(db: &DatabaseConnection,form_data: &ChangePasswordForm, user_id: i32) -> Result<(), UserError> {
     let salt = SaltString::generate(&mut OsRng);
     let argon = Argon2::default();
-    let user = User::find_by_id(user_id).one(db).await
-    .map_err(|err| UserError::DatabaseError(err))?
-    .ok_or(UserError::UserNotFound)?;
+    let user = get_user(db, user_id).await?;
     if !verify_password(&form_data.old_password, &user.password) {
         return Err(UserError::InvalidPassword);
     }
@@ -98,16 +98,15 @@ pub async fn get_all_users(db: &DatabaseConnection) -> Result<Vec<UserDTO>, sea_
         username: usr.username,
         email: usr.email,
         phone_num: usr.phone_num,
-        role: usr.role
+        role: usr.role,
+        img_url: usr.img_url
     }).collect();
 
     Ok(user_dtos)
 }
 
 pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &EditUserForm) -> Result<(), UserError>{
-    let user = User::find_by_id(user_id).one(db).await
-    .map_err(|err| UserError::DatabaseError(err))?
-    .ok_or(UserError::UserNotFound)?;
+    let user = get_user(db, user_id).await?;
     let mut user_edit: ActiveModel = user.into();
     user_edit.email = Set(form_data.email.clone());
     user_edit.phone_num = Set(form_data.phone_num.clone());
@@ -118,12 +117,31 @@ pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &E
 }
 
 pub async fn get_user_profile(db: &DatabaseConnection, user_id: i32) -> Result<UserDTO, UserError> {
-    let user = User::find_by_id(user_id).one(db).await        
-    .map_err(|err| UserError::DatabaseError(err))?
-    .ok_or(UserError::UserNotFound)?;
+    let user = get_user(db, user_id).await?;
     Ok(UserDTO { username: user.username, 
         email: user.email, 
         phone_num: user.phone_num, 
-        role: user.role 
+        role: user.role,
+        img_url: user.img_url
     })
+}
+
+pub async fn get_user(db: &DatabaseConnection, user_id: i32) -> Result<UserModel, UserError> {
+    let user = User::find_by_id(user_id).one(db).await        
+    .map_err(|err| UserError::DatabaseError(err))?
+    .ok_or(UserError::UserNotFound)?;
+    Ok(user)
+}
+
+pub async fn change_img(db: &DatabaseConnection, user_id: i32, file: String) -> Result<(), UserError>{
+    let user = get_user(db, user_id).await?;
+    if user.img_url != "default/default_user_img.png"{
+        if let Err(e) = delete_image(&user.img_url).await {
+            eprintln!("Помилка при видаленні зображення: {}", e);
+        }    
+    }
+    let mut user_edit: ActiveModel = user.into();
+    user_edit.img_url = Set(file);
+    user_edit.update(db).await.map_err(UserError::DatabaseError)?;
+    Ok(())
 }

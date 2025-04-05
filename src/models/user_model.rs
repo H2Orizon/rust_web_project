@@ -4,11 +4,11 @@ use serde::Serialize;
 use crate::models::item_model;
 
 
-enum Roles {
-    ADMIN,
-    USER,
-    SELLER
-}
+// enum Roles {
+//     ADMIN,
+//     USER,
+//     SELLER
+// }
 
 #[derive(Clone, Debug, DeriveEntityModel)]
 #[sea_orm(table_name = "user")]
@@ -19,7 +19,8 @@ pub struct Model {
     pub email: String,
     pub password: String,
     pub phone_num: String,
-    pub role: String
+    pub role: String,
+    pub img_url: String
 }
 
 #[derive(FromForm)]
@@ -58,6 +59,7 @@ pub struct UserDTO {
     pub email: String,
     pub phone_num: String,
     pub role: String,
+    pub img_url: String
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

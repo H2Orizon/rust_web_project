@@ -1,5 +1,4 @@
 use sea_orm::entity::prelude::*;
-// use rocket::form::FromForm;
 use serde::Serialize;
 use crate::models::{category_model, user_model};
 
@@ -48,6 +47,8 @@ pub enum Relation {
         to = "user_model::Column::Id"
     )]
     User,
+    #[sea_orm(has_many = "crate::models::comment_model::Entity")]
+    Comment,
 }
 
 impl Related<category_model::Entity> for Entity {
@@ -58,6 +59,11 @@ impl Related<category_model::Entity> for Entity {
 impl Related<user_model::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::User.def()
+    }
+}
+impl Related<crate::models::coment_model::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Comment.def()
     }
 }
 

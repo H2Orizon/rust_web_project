@@ -1,9 +1,9 @@
 #[macro_use] extern crate rocket;
 
-use controllers::items::{create, create_category, get_item, get_items, item_edit, patch_item_edit, post_create, post_create_category};
-use controllers::user::{change_password, edit_profile, get_all_user, log_in, log_out, patch_change_password, patch_edit_profile, post_log_in, post_register, profile, register};
+use rocket::fs::{FileServer, relative};
+use controllers::items::{create, create_category, delete_item, get_item, get_items, item_edit, patch_item_edit, post_create, post_create_category};
+use controllers::user::{add_img, change_password, edit_profile, get_all_user, log_in, log_out, patch_change_password, patch_edit_profile, post_log_in, post_register, profile, register};
 use controllers::home::index;
-use rocket::fs::FileServer;
 use rocket::Config;
 use rocket::fairing::AdHoc;
 use rocket_dyn_templates::Template;
@@ -32,13 +32,16 @@ async fn rocket() -> _ {
         .mount("/items/", routes![
             get_item, create, post_create,
             item_edit, patch_item_edit,
-            create_category, post_create_category
+            create_category, post_create_category,
+            delete_item
         ])
         .mount("/user/", routes![
             edit_profile, patch_edit_profile
             ,change_password,patch_change_password
+            ,add_img
         ])
         .mount("/static", FileServer::from("static"))
+        .mount("/uploads", FileServer::from(relative!("uploads")))
         .attach(Template::fairing())
         .attach(AdHoc::on_ignite("Cookies Config", |rocket| async {
             rocket

@@ -4,7 +4,7 @@
 
 {% block content %}
     <h1>{{ title }}</h1>
-    {% for item in products %}
+    {% for item in items %}
         <p><a href="{{item.link_to}}">{{ item.name }}</a></p>
     {% endfor %}
 {% endblock %}
