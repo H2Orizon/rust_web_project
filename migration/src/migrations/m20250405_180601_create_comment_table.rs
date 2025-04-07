@@ -14,7 +14,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Comment::Id).integer().not_null().auto_increment().primary_key())
                     .col(ColumnDef::new(Comment::UserId).integer().not_null())
                     .col(ColumnDef::new(Comment::ItemId).integer().not_null())
-                    .col(ColumnDef::new(Comment::Context).string().not_null())
+                    .col(ColumnDef::new(Comment::Content).text().not_null())
                     .foreign_key(
                         ForeignKey::create()
                             .from(Comment::Table, Comment::UserId)
@@ -43,7 +43,7 @@ enum Comment {
     Id,
     UserId,
     ItemId,
-    Context,
+    Content,
 }
 
 #[derive(Iden)]

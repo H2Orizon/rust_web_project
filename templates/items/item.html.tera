@@ -13,4 +13,13 @@
         <input type="hidden" name="_method" value="DELETE">
         <input type="submit" value="Видалити">
     </form>
+
+    <form action="/items/{{item_id}}/post_comment" method="post">
+        <textarea name="content" id="content"></textarea>
+        <input type="submit" value="Додати коментарь">
+    </form>
+    {% for comment in comments %}
+        <h5>{{comment.user_id}}</h5>
+        <p>{{comment.content}}</p>
+    {% endfor %}
 {% endblock %}

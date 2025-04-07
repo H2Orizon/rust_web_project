@@ -1,6 +1,6 @@
 use sea_orm::entity::prelude::*;
 use serde::Serialize;
-use crate::models::{category_model, user_model};
+use crate::models::{category_model, user_model, comment_model};
 
 #[derive(Clone, Debug, DeriveEntityModel, PartialEq)]
 #[sea_orm(table_name = "item")]
@@ -61,7 +61,7 @@ impl Related<user_model::Entity> for Entity {
         Relation::User.def()
     }
 }
-impl Related<crate::models::coment_model::Entity> for Entity {
+impl Related<comment_model::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Comment.def()
     }

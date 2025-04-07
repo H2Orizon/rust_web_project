@@ -3,15 +3,26 @@ use serde::Serialize;
 use crate::models::{item_model, user_model};
 
 #[derive(Clone, Debug, DeriveEntityModel, PartialEq)]
-#[sea_orm(table_name = "item")]
+#[sea_orm(table_name = "comment")]
 pub struct Model{
     #[sea_orm(primary_key)]
     pub id: i32,
     pub user_id: i32,
     pub item_id: i32,
-    pub context: String
+    pub content: String
 }
 
+#[derive(FromForm)]
+pub struct CommentForm{
+    pub content: String
+}
+
+#[derive(Serialize)]
+pub struct CommentDTO{
+    pub item_id: i32,
+    pub user_id: i32,
+    pub content: String
+}
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
@@ -28,6 +39,12 @@ pub enum Relation {
         to = "item_model::Column::Id"
     )]
     Item,
+}
+
+impl Related<item_model::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Item.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

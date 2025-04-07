@@ -1,9 +1,10 @@
 #[macro_use] extern crate rocket;
 
+use controllers::comment_controller::post_coments;
 use rocket::fs::{FileServer, relative};
-use controllers::items::{create, create_category, delete_item, get_item, get_items, item_edit, patch_item_edit, post_create, post_create_category};
-use controllers::user::{add_img, change_password, edit_profile, get_all_user, log_in, log_out, patch_change_password, patch_edit_profile, post_log_in, post_register, profile, register};
-use controllers::home::index;
+use controllers::items_controller::{create, create_category, delete_item, get_item, get_items, item_edit, patch_item_edit, post_create, post_create_category};
+use controllers::user_controller::{add_img, change_password, edit_profile, get_all_user, log_in, log_out, patch_change_password, patch_edit_profile, post_log_in, post_register, profile, register};
+use controllers::home_controller::index;
 use rocket::Config;
 use rocket::fairing::AdHoc;
 use rocket_dyn_templates::Template;
@@ -33,7 +34,7 @@ async fn rocket() -> _ {
             get_item, create, post_create,
             item_edit, patch_item_edit,
             create_category, post_create_category,
-            delete_item
+            delete_item, post_coments
         ])
         .mount("/user/", routes![
             edit_profile, patch_edit_profile

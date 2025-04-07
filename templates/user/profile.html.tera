@@ -21,4 +21,9 @@
     <form action="/profile/log_out" method="post">
         <input type="submit" value="Вийти">
     </form>
+
+    {% for comment in comments %}
+    <h5>{{comment.item_id}}</h5>
+    <p>{{comment.content}}</p>
+    {% endfor %}
 {% endblock %}

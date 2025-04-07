@@ -3,7 +3,7 @@ use rocket_dyn_templates::{Template,context};
 use sea_orm::DatabaseConnection;
 
 use crate::{models::{category_model::NewCategory, item_model::NewItemForm}, 
-services::product_service::{creat_new_item, create_category_f, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}};
+services::{comment_service::get_all_item_comments, product_service::{creat_new_item, create_category_f, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}}};
 
 #[get("/items")]
 pub async fn get_items(db: &State<DatabaseConnection>) -> Template {
@@ -26,17 +26,25 @@ pub async fn post_create_category(db: &State<DatabaseConnection>, form_data: For
 
 #[get("/<item_id>")]
 pub async fn get_item(db: &State<DatabaseConnection>, item_id: i32) -> Template {
+    
     match get_one_item(db,item_id).await{
-        Ok(item) => Template::render("items/item", context! {item: item, item_id:item_id  }),
+        Ok(item) => {
+            let comment_dtos = get_all_item_comments(db, item_id).await.unwrap_or_default();
+            Template::render("items/item", context! {item: item, item_id:item_id, comments:comment_dtos  })
+        },
         Err(_) => Template::render("error/403", context! { message: "Invalid session" }),
     }
 }
 
 #[get("/item_create")]
-pub async fn create(db: &State<DatabaseConnection>) -> Template {
-    let categories = get_all_categoris(db).await.unwrap_or_default(); 
-    Template::render("items/add_item", context!{title:"Create new item", categories:categories})
-    
+pub async fn create(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) -> Template {
+    if let Some(user_id_cookie) = cookies.get_private("user_id"){
+        if let Ok(_user_id) = user_id_cookie.value().parse::<i32>(){
+            let categories = get_all_categoris(db).await.unwrap_or_default(); 
+            return Template::render("items/add_item", context!{title:"Create new item", categories:categories});
+        }
+    }
+    Template::render("error/403", context! { message: "Invalid session" })
 }
 
 #[post("/item_create", data="<form_data>")]
@@ -44,12 +52,12 @@ pub async fn post_create(db: &State<DatabaseConnection>, form_data: Form<NewItem
     if let Some(user_id_cookie) = cookies.get_private("user_id"){
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
             match creat_new_item(db.inner(), &form_data, user_id).await {
-                Ok(_) => return Redirect::to("/items"),
-                Err(_) => return Redirect::to("/items/item_create")
+                Ok(_) => return Redirect::to(uri!(get_items)),
+                Err(_) => return Redirect::to(uri!(create))
             }
         }
     }
-    Redirect::to(uri!(get_items))
+    Redirect::to("/log_in")
 }
 
 #[get("/<item_id>/item_edit")]

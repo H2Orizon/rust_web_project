@@ -62,7 +62,6 @@ pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory)
 }
 
 pub async fn creat_new_item(db: &DatabaseConnection, form_data: &NewItemForm, user_id: i32) -> Result<(), ItemError> {
-    println!("Ваш ID: {}", user_id);
     let new_item = ActiveModelItem{
         name: Set(form_data.name.clone()),
         category_id: Set(form_data.category_id.clone()),

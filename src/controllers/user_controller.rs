@@ -4,6 +4,7 @@ use rocket::State;
 use rocket::{form::Form, response::Redirect};
 use sea_orm::DatabaseConnection;
 use crate::models::user_model::{ChangePasswordForm, EditUserForm, LogInUserForm};
+use crate::services::comment_service::get_all_user_comments;
 use crate::services::user_service::{change_img, change_password_f, edit_profile_f, get_all_users, get_user_profile};
 use crate::{models::user_model::NewUserForm, services::user_service::{create_user, log_in as log_inF}};
 use crate::services::help_service::{file_load,UploadForm};
@@ -50,25 +51,24 @@ pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) ->
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
             match get_user_profile(db.inner(), user_id).await {
                 Ok(user) =>{
-                    Template::render("user/profile", context!{
+                    let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
+                    return Template::render("user/profile", context!{
                         title:"My profile",
-                        user:user
+                        user:user,
+                        comments: user_comments
                     })
                 }
-                Err(_) => Template::render("error/404", context! { message: "User not found" })
+                Err(_) => return Template::render("error/404", context! { message: "User not found" })
             }
-        }else {
-            Template::render("error/403", context! { message: "Invalid session" })
         }
-    }else {
-        Template::render("error/403", context! { message: "Invalid session" })
     }
+    Template::render("error/403", context! { message: "Invalid session" })
 }
 
 #[post("/profile/log_out")]
 pub fn log_out(cookies: &CookieJar<'_>) -> Redirect{
     cookies.remove_private("user_id");
-    Redirect::to(uri!(crate::controllers::home::index))
+    Redirect::to(uri!(crate::controllers::home_controller::index))
 }
 
 #[get("/all_users")]
