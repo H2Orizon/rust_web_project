@@ -23,7 +23,7 @@
     </form>
 
     {% for comment in comments %}
-    <h5>{{comment.item_id}}</h5>
+    <h5>{{comment.item_name}}</h5>
     <p>{{comment.content}}</p>
     {% endfor %}
 {% endblock %}

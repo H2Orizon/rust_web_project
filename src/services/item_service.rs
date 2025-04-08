@@ -1,8 +1,8 @@
 use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
 use thiserror::Error;
 
-use crate::models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
-        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}};
+use crate::{models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
+        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}}, services::img_for_items_services::get_all_item_imgs};
 
 #[derive(Debug, Error)]
 pub enum ItemError {
@@ -18,7 +18,9 @@ pub async fn get_all_item(db: &DatabaseConnection) -> Result<Vec<ItemDTO>, sea_o
     let items = ItemEntity::find().all(db).await?;
     let mut item_dtos = Vec::new();
     for itm in items {
-        let category = category_to_string(db,itm.id).await;
+        let img = get_all_item_imgs(db, itm.id).await?;
+        let category = category_to_string(db,itm.category_id).await;
+        println!("{}",category);
         item_dtos.push(ItemDTO {
             id: itm.id,
             name: itm.name,
@@ -26,7 +28,8 @@ pub async fn get_all_item(db: &DatabaseConnection) -> Result<Vec<ItemDTO>, sea_o
             price: itm.price,
             description: itm.description,
             link_to: format!("/items/{}", itm.id),
-            user_id: itm.user_id 
+            user_id: itm.user_id,
+            imgs: img
         });
     }
     Ok(item_dtos)
@@ -40,8 +43,18 @@ pub async fn get_one_item(db: &DatabaseConnection, item_id: i32) -> Result<ItemD
     let item = ItemEntity::find_by_id(item_id).one(db)
     .await.map_err(|err| ItemError::DatabaseError(err))?
     .ok_or(ItemError::ItemNotFound)?;
-    let category = category_to_string(db,item.id).await;
-    Ok(ItemDTO { id: item.id, name: item.name, category: category, price: item.price, description: item.description, link_to: "".to_string(), user_id: item.user_id })
+    let category = category_to_string(db,item.category_id).await;
+    let img = get_all_item_imgs(db, item.id).await?;
+    Ok(ItemDTO { 
+        id: item.id, 
+        name: item.name, 
+        category: category, 
+        price: item.price, 
+        description: item.description, 
+        link_to: "".to_string(),
+        user_id: item.user_id,
+        imgs: img
+    })
 }
 
 pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory) -> Result<(), ItemError> {

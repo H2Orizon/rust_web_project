@@ -105,14 +105,14 @@ pub async fn patch_edit_profile(db: &State<DatabaseConnection>, cookies: &Cookie
 }
 
 #[post("/add_img", data = "<form_data>")]
-pub async fn add_img<'r>(db: &State<DatabaseConnection>,form_data: Form<UploadForm<'r>>,cookies: &CookieJar<'_>,) -> Redirect {
+pub async fn add_img<'r>(db: &State<DatabaseConnection>,form_data: Form<UploadForm<'r>>,cookies: &CookieJar<'_>) -> Redirect {
     let dir = "user_img";
 
     let filename = match file_load(form_data, &dir).await {
         Ok(name) => name,
         Err(_) => {
             eprintln!("Не вдалося зберегти файл");
-            return Redirect::to(uri!(profile));
+            return Redirect::to(uri!(profile))
         }
     };
 
@@ -123,7 +123,7 @@ pub async fn add_img<'r>(db: &State<DatabaseConnection>,form_data: Form<UploadFo
             Some(id) => id,
             None => {
                 eprintln!("Користувач не в сесії");
-                return Redirect::to(uri!(log_in));
+                return Redirect::to(uri!(log_in))
             }
     };
 

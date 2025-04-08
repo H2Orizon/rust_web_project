@@ -1,5 +1,7 @@
-use crate::models::comment_model::{ActiveModel, CommentDTO, CommentForm, Entity as CommentEntity};
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
+use crate::models::{comment_model::{ActiveModel, CommentDTO, CommentForm, Entity as CommentEntity},
+user_model::Entity as UserEntity,
+item_model::Entity as ItemEntity};
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait, QueryFilter};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -14,12 +16,15 @@ pub async fn get_all_item_comments(db: &DatabaseConnection, item_id: i32) -> Res
     .all(db)
     .await?;
     let mut comment_dtos = Vec::new();
-    for comm in comments{
-        comment_dtos.push(CommentDTO{
-            user_id: comm.user_id,
-            item_id: comm.item_id,
-            content: comm.content
-        });
+
+    for comment in comments {
+    let user = comment.find_related(UserEntity).one(db).await?;
+    let item = comment.find_related(ItemEntity).one(db).await?;
+    comment_dtos.push(CommentDTO {
+        user_name: user.map(|u| u.username),
+        item_name: item.map(|i| i.name),
+        content: comment.content,
+    });
     }
     Ok(comment_dtos)
 }
@@ -30,24 +35,27 @@ pub async fn get_all_user_comments(db: &DatabaseConnection, user_id: i32) -> Res
     .all(db)
     .await?;
     let mut comment_dtos = Vec::new();
-    for comm in comments{
-        comment_dtos.push(CommentDTO{
-            user_id: comm.user_id,
-            item_id: comm.item_id,
-            content: comm.content
-        });
+
+    for comment in comments {
+    let user = comment.find_related(UserEntity).one(db).await?;
+    let item = comment.find_related(ItemEntity).one(db).await?;
+    comment_dtos.push(CommentDTO {
+        user_name: user.map(|u| u.username),
+        item_name: item.map(|i| i.name),
+        content: comment.content,
+    });
     }
     Ok(comment_dtos)
 }
 
-pub async fn get_item_comment(db: &DatabaseConnection, comment_id: i32) -> Result<CommentDTO, sea_orm::DbErr>{
-    let comment = CommentEntity::find_by_id(comment_id)
-    .one(db).await?    
-    .ok_or(sea_orm::DbErr::RecordNotFound(
-        format!("Comment {} not found", comment_id),
-    ))?;
-    Ok(CommentDTO { item_id: comment.item_id, user_id: comment.user_id, content: comment.content })
-}
+// pub async fn get_item_comment(db: &DatabaseConnection, comment_id: i32) -> Result<CommentDTO, sea_orm::DbErr>{
+//     let comment = CommentEntity::find_by_id(comment_id)
+//     .one(db).await?    
+//     .ok_or(sea_orm::DbErr::RecordNotFound(
+//         format!("Comment {} not found", comment_id),
+//     ))?;
+//     Ok(CommentDTO { item_id: comment.item_id, user_id: comment.user_id, content: comment.content })
+// }
 
 pub async fn create_comment(db: &DatabaseConnection, user_id: i32, item_id: i32, form_data: &CommentForm) -> Result<(), CommentError> {
     let new_comment = ActiveModel{

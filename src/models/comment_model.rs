@@ -19,8 +19,8 @@ pub struct CommentForm{
 
 #[derive(Serialize)]
 pub struct CommentDTO{
-    pub item_id: i32,
-    pub user_id: i32,
+    pub item_name: Option<String>,
+    pub user_name: Option<String>,
     pub content: String
 }
 
@@ -44,6 +44,11 @@ pub enum Relation {
 impl Related<item_model::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::Item.def()
+    }
+}
+impl Related<user_model::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::User.def()
     }
 }
 

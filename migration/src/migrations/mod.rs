@@ -5,3 +5,4 @@ pub mod m20250327_120459_add_password_to_user;
 pub mod m20250328_124122_create_categories_table_and_item_table;
 pub mod m20250405_144654_add_img_to_user;
 pub mod m20250405_180601_create_comment_table;
+pub mod m20250407_172135_create_imgs_for_items;

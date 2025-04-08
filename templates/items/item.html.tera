@@ -9,9 +9,24 @@
     <p>Ціна: {{ item.price }}</p>
     <p>Категорія: {{ item.category }}</p>
     
-    <form action="/items/{{item_id}}/delete" method="post">
-        <input type="hidden" name="_method" value="DELETE">
-        <input type="submit" value="Видалити">
+    {% if user_id is defined and user_id == item.user_id%}
+        <form action="/items/{{item_id}}/delete" method="post">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="submit" value="Видалити">
+        </form>
+    {% endif %}
+
+    {% for img in item.imgs%}
+        <form action="/items/{{item_id}}/{{img.id}}/delete" method="post">
+            <input type="hidden" name="_method" value="DELETE">
+            <input type="submit" value="Видалити">
+        </form>
+        <img src="/uploads/{{img.img_url}}" onerror="this.src='/uploads/default/default_user_img.png'" alt="Avatar">
+    {% endfor %}
+
+    <form action="/items/{{item_id}}/add_item_img" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="file">
+        <input type="submit" value="Додадти картинку">
     </form>
 
     <form action="/items/{{item_id}}/post_comment" method="post">
@@ -19,7 +34,7 @@
         <input type="submit" value="Додати коментарь">
     </form>
     {% for comment in comments %}
-        <h5>{{comment.user_id}}</h5>
+        <h5>{{comment.user_name}}</h5>
         <p>{{comment.content}}</p>
     {% endfor %}
 {% endblock %}
