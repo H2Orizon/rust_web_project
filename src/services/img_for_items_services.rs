@@ -3,6 +3,8 @@ use thiserror::Error;
 
 use crate::models::img_for_item::{self, ActiveModel, Entity as ImgEntity, ImgItemDTO};
 
+use super::help_service::delete_item_folder;
+
 #[derive(Debug, Error)]
 pub enum ImgError {
     #[error("Failed to insert user into database")]
@@ -54,6 +56,18 @@ pub async fn can_add_more_imgs(db: &DatabaseConnection, item_id: i32) -> Result<
     .count(db)
     .await?;
     Ok(count < 5)
+}
+
+pub async fn delete_all_item_img(db: &DatabaseConnection, item_id: i32) -> Result<(), sea_orm::DbErr>{
+    let img_url = item_id.to_string();
+    if let Err(err) = delete_item_folder(&img_url).await{
+        eprintln!("Помилка при видаленні деректорії: {:?}", err);
+    }
+    
+    let _delete = ImgEntity::delete_many()
+    .filter(img_for_item::Column::ItemId.eq(item_id))
+    .exec(db).await?;
+    Ok(())
 }
 
 pub async fn delete_image_db(db: &DatabaseConnection, img_id: i32) -> Result<(), sea_orm::DbErr>{

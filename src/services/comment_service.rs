@@ -1,6 +1,4 @@
-use crate::models::{comment_model::{ActiveModel, CommentDTO, CommentForm, Entity as CommentEntity},
-user_model::Entity as UserEntity,
-item_model::Entity as ItemEntity};
+use crate::models::{comment_model::{self, ActiveModel, CommentDTO, CommentForm, Entity as CommentEntity}, item_model::Entity as ItemEntity, user_model::Entity as UserEntity};
 use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait, QueryFilter};
 use thiserror::Error;
 
@@ -21,6 +19,7 @@ pub async fn get_all_item_comments(db: &DatabaseConnection, item_id: i32) -> Res
     let user = comment.find_related(UserEntity).one(db).await?;
     let item = comment.find_related(ItemEntity).one(db).await?;
     comment_dtos.push(CommentDTO {
+        id: comment.id,
         user_name: user.map(|u| u.username),
         item_name: item.map(|i| i.name),
         content: comment.content,
@@ -40,6 +39,7 @@ pub async fn get_all_user_comments(db: &DatabaseConnection, user_id: i32) -> Res
     let user = comment.find_related(UserEntity).one(db).await?;
     let item = comment.find_related(ItemEntity).one(db).await?;
     comment_dtos.push(CommentDTO {
+        id: comment.id,
         user_name: user.map(|u| u.username),
         item_name: item.map(|i| i.name),
         content: comment.content,
@@ -73,4 +73,16 @@ pub async fn create_comment(db: &DatabaseConnection, user_id: i32, item_id: i32,
             Err(CommentError::DatabaseError(e))
         }
     }
+}
+
+pub async fn delete_comment_f(db: &DatabaseConnection, comment_id: i32) -> Result<(), sea_orm::DbErr> {
+    let _delete = CommentEntity::delete_by_id(comment_id).exec(db).await?;
+    Ok(())    
+}
+
+pub async fn delete_all_item_comments(db: &DatabaseConnection, item_id: i32) -> Result<(),sea_orm::DbErr>{
+    let _delete = CommentEntity::delete_many()
+    .filter(comment_model::Column::ItemId.eq(item_id)) 
+    .exec(db).await?;
+    Ok(())
 }

@@ -97,7 +97,9 @@ pub async fn patch_item_edit( db: &State<DatabaseConnection>, item_id: i32, form
 #[delete("/<item_id>/delete")]
 pub async fn delete_item(db: &State<DatabaseConnection>,item_id: i32) -> Redirect {
     match delete_item_f(db, item_id).await {
-        Ok(_) => return Redirect::to(uri!(get_items)),
+        Ok(_) => {
+            return Redirect::to(uri!(get_items))
+        },
         Err(_) => return Redirect::to(format!("/items/{}",item_id))
     }
 }

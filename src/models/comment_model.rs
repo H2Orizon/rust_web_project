@@ -19,6 +19,7 @@ pub struct CommentForm{
 
 #[derive(Serialize)]
 pub struct CommentDTO{
+    pub id: i32,
     pub item_name: Option<String>,
     pub user_name: Option<String>,
     pub content: String

@@ -34,6 +34,10 @@
         <input type="submit" value="Додати коментарь">
     </form>
     {% for comment in comments %}
+        <form action="/items/{{item_id}}/{{comment.id}}/delete_comment" method="post">
+            <input type="hidden" name="_method" value="delete">
+            <button type="submit">Видалити</button>
+        </form>
         <h5>{{comment.user_name}}</h5>
         <p>{{comment.content}}</p>
     {% endfor %}

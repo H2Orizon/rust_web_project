@@ -82,3 +82,11 @@ pub async fn delete_image(filename: &str) -> Result<(), io::Error> {
     let path: PathBuf = PathBuf::from(relative!("uploads")).join(filename);
     fs::remove_file(&path).await
 }
+
+pub async fn delete_item_folder(dir_name: &str) -> Result<(), io::Error> {
+    let path: PathBuf = PathBuf::from(relative!("uploads/item_img")).join(dir_name);
+    if path.exists() {
+        fs::remove_dir_all(&path).await?;
+    }
+    Ok(())
+}

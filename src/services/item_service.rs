@@ -4,6 +4,8 @@ use thiserror::Error;
 use crate::{models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
         item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}}, services::img_for_items_services::get_all_item_imgs};
 
+use super::{comment_service::delete_all_item_comments, img_for_items_services::delete_all_item_img};
+
 #[derive(Debug, Error)]
 pub enum ItemError {
     #[error("Failed to insert user into database")]
@@ -131,6 +133,12 @@ pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewI
 }
 
 pub async fn delete_item_f(db: &DatabaseConnection, item_id: i32) -> Result<(), DbErr> {
+    if let Err(err) = delete_all_item_img(db, item_id).await{
+        eprintln!("Помилка при видаленні картинок з бази данних: {:?}", err);
+    }
+    if let Err(err) = delete_all_item_comments(db, item_id).await{
+        eprintln!("Помилка при видаленні коментарів з бази данних: {:?}", err);
+    }
     let _item = ItemEntity::delete_by_id(item_id).exec(db).await?;
     Ok(())
 }
