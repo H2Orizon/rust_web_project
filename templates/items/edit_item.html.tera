@@ -1,19 +1,32 @@
 {% extends "base" %}
-
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h1>{{title}}</h1>
-<form action="/items/{{item_id}}/item_edit" method="post">
-    <input type="hidden" name="_method" value="PATCH">
-    <input id="name" name="name" type="text">
-    <input id="price" name="price" type="text">
-    <textarea name="description" id="description"></textarea>
-    <select name="category_id" id="category_id">
-        {% for category in categories %}
-            <option value={{category.id}}>{{category.name}}</option>
-        {% endfor %}
-    </select>
-    <input type="submit" value="Add">
-</form>
+<div class="container my-4">
+    <h1>{{ title }}</h1>
+    <form action="/items/{{item_id}}/item_edit" method="post">
+        <input type="hidden" name="_method" value="PATCH">
+        <div class="mb-3">
+            <label for="name" class="form-label">Назва</label>
+            <input id="name" name="name" type="text" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Ціна</label>
+            <input id="price" name="price" type="text" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Опис</label>
+            <textarea name="description" id="description" class="form-control"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="category_id" class="form-label">Категорія</label>
+            <select name="category_id" id="category_id" class="form-select">
+                {% for category in categories %}
+                    <option value={{category.id}}>{{category.name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-warning">Зберегти</button>
+    </form>
+</div>
 {% endblock %}

@@ -2,23 +2,43 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<h2>Форма додавання користувача</h2>
-<form action="/register" method="post">
-    <label for="username">Ім'я:</label>
-    <input type="text" id="username" name="username" required><br><br>
-
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required><br><br>
-
-    <label for="phone_num">Телефон:</label>
-    <input type="text" id="phone_num" name="phone_num" required><br><br>
-    
-    <label for="password">Пароль:</label>
-    <input type="password" id="password" name="password" required><br><br>
-
-    <label for="role">Роль:</label>
-    <input type="text" id="role" name="role" required><br><br>
-
-    <button type="submit">Додати</button>
-</form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow rounded-4">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-center mb-4">Реєстрація користувача</h3>
+                    <form action="/register" method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Ім'я</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone_num" class="form-label">Телефон</label>
+                            <input type="text" class="form-control" id="phone_num" name="phone_num" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Роль</label>
+                            <input type="text" class="form-control" id="role" name="role" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Зареєструватися</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-3">
+                        <small>Вже маєте акаунт? <a href="/log_in">Увійти</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

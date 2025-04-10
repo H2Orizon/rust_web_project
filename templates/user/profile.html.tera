@@ -3,27 +3,86 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
-    <img src="/uploads/{{ user.img_url }}" onerror="this.src='/uploads/default/default_user_img.png'" alt="Avatar">
-    <p>Ваш профіль {{user.username}}</p>
-    <p>Ваш пошта {{user.email}}</p>
-    <p>Ваш номир телефону {{user.phone_num}}</p>
-    <p>Ваша роль {{user.role}}</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm rounded-4">
+                <div class="card-body text-center p-4">
+                    <img src="/uploads/{{ user.img_url }}" onerror="this.src='/uploads/default/default_user_img.png'" class="rounded-circle mb-3" alt="Avatar" width="120" height="120">
+                    <h3 class="card-title mb-3">{{ user.username }}</h3>
+                    <p class="mb-1"><strong>Email:</strong> {{ user.email }}</p>
+                    <p class="mb-1"><strong>Телефон:</strong> {{ user.phone_num }}</p>
+                    <p class="mb-3"><strong>Роль:</strong> {{ user.role }}</p>
 
-    <a href="/user/edit_profile">Редагування профілю</a>
-    <a href="/user/change_password">Змінити пароль</a>
+                    <div class="d-grid gap-2 mb-3">
+                        <a href="/user/edit_profile" class="btn btn-outline-primary">Редагувати профіль</a>
+                        <a href="/user/change_password" class="btn btn-outline-warning">Змінити пароль</a>
+                    </div>
 
-    <form action="/user/add_img" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" id="file">
-        <input type="submit" value="Додадти картинку">
-    </form>
+                    <form action="/user/add_img" method="post" enctype="multipart/form-data" class="mb-3">
+                        <div class="input-group">
+                            <input type="file" class="form-control" name="file" id="file" required>
+                            <button type="submit" class="btn btn-success">Додати картинку</button>
+                        </div>
+                    </form>
 
-    <form action="/profile/log_out" method="post">
-        <input type="submit" value="Вийти">
-    </form>
+                    <form action="/profile/log_out" method="post">
+                        <button type="submit" class="btn btn-danger w-100">Вийти</button>
+                    </form>
+                </div>
+            </div>
 
-    {% for comment in comments %}
-    <h5>{{comment.item_name}}</h5>
-    <p>{{comment.content}}</p>
-    {% endfor %}
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mt-4" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">Коментарі</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">Мої товари</button>
+                </li>
+            </ul>
+            <!-- Comments Tab -->
+            <div class="tab-pane fade show active" id="comments" role="tabpanel">
+                {% if comments %}
+                    <ul class="list-group">
+                        {% for comment in comments %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ comment.item_name }}</strong><br>
+                                {{ comment.content }}
+                            </div>
+                            <form action="" method="post" class="ms-3">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+                            </form>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Немає коментарів</p>
+                {% endif %}
+            </div>
+
+            <!-- Items Tab -->
+            <div class="tab-pane fade" id="items" role="tabpanel">
+                {% if items %}
+                    <ul class="list-group">
+                        {% for item in items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ item.name }}</strong><br>
+                                {{ item.description }}
+                            </div>
+                            <form action="/items/{{ item.id }}/delete" method="post" class="ms-3">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+                            </form>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Немає товарів</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

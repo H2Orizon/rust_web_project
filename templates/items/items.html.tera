@@ -1,10 +1,79 @@
 {% extends "base" %}
-
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ title }}</h1>
-    {% for item in items %}
-        <p><a href="{{item.link_to}}">{{ item.name }}</a></p>
-    {% endfor %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>{{ title }}</h1>
+        <div>
+            <a href="/items/item_create" class="btn btn-success me-2">+ Новий товар</a>
+            <a href="/items/create_category" class="btn btn-primary">+ Нова категорія</a>
+        </div>
+    </div>
+
+    <!-- Перемикач стилю -->
+    <div class="mb-3">
+        <button id="switch-to-cards" class="btn btn-outline-secondary btn-sm">Картки</button>
+        <button id="switch-to-table" class="btn btn-outline-secondary btn-sm">Таблиця</button>
+    </div>
+
+    <!-- Відображення у вигляді карток -->
+    <div id="card-view" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+        {% for item in items %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                {# <img src="/uploads/{{ item.preview_img_url | default('default/default_item_img.png') }}" class="card-img-top" alt="{{ item.name }}"> #}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ item.name }}</h5>
+                    <p class="card-text">Ціна: {{ item.price }} ₴</p>
+                    <a href="{{ item.link_to }}" class="btn btn-outline-primary mt-auto">Детальніше</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Відображення у вигляді таблиці -->
+    <div id="table-view" class="table-responsive" style="display: none;">
+        <table class="table table-striped table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>Назва</th>
+                    <th>Ціна</th>
+                    <th>Категорія</th>
+                    <th>Дії</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.price }} ₴</td>
+                    <td>{{ item.category }}</td>
+                    <td>
+                        <a href="{{ item.link_to }}" class="btn btn-sm btn-outline-primary">Переглянути</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const cardView = document.getElementById('card-view');
+    const tableView = document.getElementById('table-view');
+    const btnCards = document.getElementById('switch-to-cards');
+    const btnTable = document.getElementById('switch-to-table');
+
+    btnCards.addEventListener('click', () => {
+        cardView.style.display = 'flex';
+        tableView.style.display = 'none';
+    });
+
+    btnTable.addEventListener('click', () => {
+        cardView.style.display = 'none';
+        tableView.style.display = 'block';
+    });
+</script>
 {% endblock %}
