@@ -20,6 +20,8 @@ pub async fn get_all_item_comments(db: &DatabaseConnection, item_id: i32) -> Res
     let item = comment.find_related(ItemEntity).one(db).await?;
     comment_dtos.push(CommentDTO {
         id: comment.id,
+        user_id: comment.user_id,
+        item_id: item_id,
         user_name: user.map(|u| u.username),
         item_name: item.map(|i| i.name),
         content: comment.content,
@@ -40,6 +42,8 @@ pub async fn get_all_user_comments(db: &DatabaseConnection, user_id: i32) -> Res
     let item = comment.find_related(ItemEntity).one(db).await?;
     comment_dtos.push(CommentDTO {
         id: comment.id,
+        user_id: user_id,
+        item_id: comment.item_id,
         user_name: user.map(|u| u.username),
         item_name: item.map(|i| i.name),
         content: comment.content,

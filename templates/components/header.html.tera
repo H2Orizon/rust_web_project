@@ -1,0 +1,33 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <a class="navbar-brand" href="/">🛍️ MyShop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/items">Товари</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile">Профіль</a>
+          </li>
+        {% if user_id is defined %}
+          <li class="nav-item">
+            <form action="/profile/log_out" method="post" class="d-inline">
+              <button class="btn btn-sm btn-outline-light ms-2" type="submit">Вийти</button>
+            </form>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="/log_in">Вхід</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/register">Реєстрація</a>
+          </li>
+        {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+  

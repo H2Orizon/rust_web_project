@@ -1,4 +1,4 @@
-use sea_orm::{ActiveModelTrait, ActiveValue::Set, DatabaseConnection, DbErr, EntityTrait};
+use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 use thiserror::Error;
 
 use crate::{models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
@@ -36,6 +36,27 @@ pub async fn get_all_item(db: &DatabaseConnection) -> Result<Vec<ItemDTO>, sea_o
     }
     Ok(item_dtos)
 }
+pub async fn get_all_user_item(db: &DatabaseConnection, user_id: i32) -> Result<Vec<ItemDTO>, sea_orm::DbErr> {
+    let items = ItemEntity::find().filter(<ItemEntity as sea_orm::EntityTrait>::Column::UserId.eq(user_id)).all(db).await?;
+    let mut item_dtos = Vec::new();
+    for itm in items {
+        let img = get_all_item_imgs(db, itm.id).await?;
+        let category = category_to_string(db,itm.category_id).await;
+        println!("{}",category);
+        item_dtos.push(ItemDTO {
+            id: itm.id,
+            name: itm.name,
+            category,
+            price: itm.price,
+            description: itm.description,
+            link_to: format!("/items/{}", itm.id),
+            user_id: itm.user_id,
+            imgs: img
+        });
+    }
+    Ok(item_dtos)
+}
+
 
 async fn category_to_string(db: &DatabaseConnection, id: i32) -> String {
     get_category(db, id).await.map(|c| c.name).unwrap_or_else(|_| "Невідома категорія".to_string())

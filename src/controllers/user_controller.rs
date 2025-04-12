@@ -5,6 +5,7 @@ use rocket::{form::Form, response::Redirect};
 use sea_orm::DatabaseConnection;
 use crate::models::user_model::{ChangePasswordForm, EditUserForm, LogInUserForm};
 use crate::services::comment_service::get_all_user_comments;
+use crate::services::item_service::get_all_user_item;
 use crate::services::user_service::{change_img, change_password_f, edit_profile_f, get_all_users, get_user_profile};
 use crate::{models::user_model::NewUserForm, services::user_service::{create_user, log_in as log_inF}};
 use crate::services::help_service::{file_load,UploadForm};
@@ -51,11 +52,18 @@ pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) ->
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
             match get_user_profile(db.inner(), user_id).await {
                 Ok(user) =>{
+                    let redirect_url = format!("/profile");
+                    let delete_url = format!("/profile");
                     let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
+                    let user_item = get_all_user_item(db, user_id).await.unwrap_or_default();
                     return Template::render("user/profile", context!{
                         title:"My profile",
                         user:user,
-                        comments: user_comments
+                        comments: user_comments,
+                        items: user_item,
+                        redirect_url: redirect_url,
+                        delete_url: delete_url,
+                        user_in_jar: user_id
                     })
                 }
                 Err(_) => return Template::render("error/404", context! { message: "User not found" })
@@ -64,6 +72,33 @@ pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) ->
     }
     Template::render("error/403", context! { message: "Invalid session" })
 }
+
+#[get("/<user_id>/profile")]
+pub async fn profile_user(db: &State<DatabaseConnection>, user_id: i32, cookies: &CookieJar<'_>) -> Result<Template, Redirect>{
+    if let Some(user_id_cookie) = cookies.get_private("user_id"){
+        if let Ok(user_in_jar) = user_id_cookie.value().parse::<i32>(){
+            if user_in_jar == user_id{
+                return Err(Redirect::to("/profile"));
+            }
+        }
+    }
+    match get_user_profile(db.inner(), user_id).await {
+        Ok(user) =>{
+            let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
+            let user_item = get_all_user_item(db, user_id).await.unwrap_or_default();
+            Ok(Template::render("user/profile", context!{
+                title:"My profile",
+                user:user,
+                comments: user_comments,
+                items: user_item,
+                redirect_url: "None",
+                delete_url: "None",
+                user_in_jar: "None"
+            }))
+        }
+        Err(_) => Err(Redirect::to(uri!("/404")))
+    }
+} 
 
 #[post("/profile/log_out")]
 pub fn log_out(cookies: &CookieJar<'_>) -> Redirect{

@@ -14,21 +14,24 @@
                     <p class="mb-1"><strong>Телефон:</strong> {{ user.phone_num }}</p>
                     <p class="mb-3"><strong>Роль:</strong> {{ user.role }}</p>
 
-                    <div class="d-grid gap-2 mb-3">
-                        <a href="/user/edit_profile" class="btn btn-outline-primary">Редагувати профіль</a>
-                        <a href="/user/change_password" class="btn btn-outline-warning">Змінити пароль</a>
-                    </div>
-
-                    <form action="/user/add_img" method="post" enctype="multipart/form-data" class="mb-3">
-                        <div class="input-group">
-                            <input type="file" class="form-control" name="file" id="file" required>
-                            <button type="submit" class="btn btn-success">Додати картинку</button>
+                    {% if user is defined and user.id == user_in_jar%}
+                        <div class="d-grid gap-2 mb-3">
+                            <a href="/user/edit_profile" class="btn btn-outline-primary">Редагувати профіль</a>
+                            <a href="/user/change_password" class="btn btn-outline-warning">Змінити пароль</a>
                         </div>
-                    </form>
+                        
 
-                    <form action="/profile/log_out" method="post">
-                        <button type="submit" class="btn btn-danger w-100">Вийти</button>
-                    </form>
+                        <form action="/user/add_img" method="post" enctype="multipart/form-data" class="mb-3">
+                            <div class="input-group">
+                                <input type="file" class="form-control" name="file" id="file" required>
+                                <button type="submit" class="btn btn-success">Додати картинку</button>
+                            </div>
+                        </form>
+
+                        <form action="/profile/log_out" method="post">
+                            <button type="submit" class="btn btn-danger w-100">Вийти</button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
 
@@ -51,9 +54,13 @@
                                 <strong>{{ comment.item_name }}</strong><br>
                                 {{ comment.content }}
                             </div>
-                            <form action="" method="post" class="ms-3">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
-                            </form>
+                            {% if user is defined and user.id == user_in_jar%}
+                                <form action="/items/{{comment.item_id}}/{{comment.id}}/delete_comment" method="post" class="ms-3">
+                                    <input type="hidden" name="_method" value="delete">
+                                    <input type="hidden" name="redirect_url" value="{{ redirect_url  }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+                                </form>
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ul>
@@ -69,12 +76,17 @@
                         {% for item in items %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>{{ item.name }}</strong><br>
+                                <a href="/items/{{ item.id }}"><strong>{{ item.name }}</strong><br></a>
                                 {{ item.description }}
                             </div>
+                            {% if user is defined and user.id == user_in_jar%}
                             <form action="/items/{{ item.id }}/delete" method="post" class="ms-3">
+                                <input type="hidden" name="_method" value="DELETE">
+                                <input type="hidden" name="redirect_url" value="{{ delete_url  }}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
                             </form>
+                            <a href="/items/{{item.id}}/item_edit" class="btn btn-primary-outline">Редагувати</a>
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ul>

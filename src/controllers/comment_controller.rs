@@ -3,6 +3,7 @@ use rocket::http::CookieJar;
 use rocket::response::Redirect;
 use rocket::State;
 use sea_orm::DatabaseConnection;
+use crate::models::category_model::DeleteCommUrl;
 use crate::models::comment_model::CommentForm;
 
 use crate::services::comment_service::{create_comment, delete_comment_f};
@@ -20,13 +21,14 @@ pub async fn post_coments(db: &State<DatabaseConnection>, item_id: i32, form_dat
     Redirect::to("/log_in")
 }
 
-#[delete("/<item_id>/<comment_id>/delete_comment")]
-pub async fn delete_comment(db: &State<DatabaseConnection>, item_id: i32, comment_id: i32, cookies: &CookieJar<'_>) ->Redirect {
+#[delete("/<item_id>/<comment_id>/delete_comment", data = "<form_data>")]
+pub async fn delete_comment(db: &State<DatabaseConnection> ,form_data: Form<DeleteCommUrl>, item_id: i32, comment_id: i32, cookies: &CookieJar<'_>) ->Redirect {
     if let Some(user_id_cookie) = cookies.get_private("user_id"){
         if let Ok(_user_id) = user_id_cookie.value().parse::<i32>(){
+            println!("{}",form_data.redirect_url.clone());
             match delete_comment_f(&db,comment_id).await {
-                Ok(_) => return Redirect::to(format!("/items/{}",item_id)),
-                Err(_) => return Redirect::to(format!("/items/{}",item_id))
+                Ok(_) => return Redirect::to(form_data.redirect_url.clone()),
+                Err(_) => return Redirect::to(form_data.redirect_url.clone())
             }
         }
     }

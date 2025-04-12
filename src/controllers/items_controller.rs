@@ -2,7 +2,7 @@ use rocket::{form::Form, http::CookieJar, response::Redirect, State};
 use rocket_dyn_templates::{Template,context};
 use sea_orm::DatabaseConnection;
 
-use crate::{models::{category_model::NewCategory, item_model::NewItemForm}, 
+use crate::{models::{category_model::{DeleteCommUrl, NewCategory}, item_model::NewItemForm}, 
 services::{comment_service::get_all_item_comments, help_service::{delete_image, file_load_for_item, UploadForm}, img_for_items_services::{add_img_to_item, delete_image_db, get_img_url_as_string}, item_service::{creat_new_item, create_category_f, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}}};
 
 #[get("/items")]
@@ -26,13 +26,14 @@ pub async fn post_create_category(db: &State<DatabaseConnection>, form_data: For
 
 #[get("/<item_id>")]
 pub async fn get_item(db: &State<DatabaseConnection>, item_id: i32, cookies: &CookieJar<'_>) -> Template {
+    let redirect_url = format!("/items/{}",item_id);
+    let delete_url = format!("/items/{}",item_id);
     let user_id = cookies.get_private("user_id")
         .and_then(|cookie| cookie.value().parse::<i32>().ok());
     match get_one_item(db,item_id).await{
         Ok(item) => {
-
             let comment_dtos = get_all_item_comments(db, item_id).await.unwrap_or_default();
-            Template::render("items/item", context! {item: item, item_id:item_id, comments:comment_dtos, user_id:user_id})
+            Template::render("items/item", context! {item: item, item_id:item_id, comments:comment_dtos, user_id:user_id, redirect_url:redirect_url, delete_url:delete_url})
         },
         Err(_) => Template::render("error/403", context! { message: "Invalid session" }),
     }
@@ -94,13 +95,13 @@ pub async fn patch_item_edit( db: &State<DatabaseConnection>, item_id: i32, form
     }
 }
 
-#[delete("/<item_id>/delete")]
-pub async fn delete_item(db: &State<DatabaseConnection>,item_id: i32) -> Redirect {
+#[delete("/<item_id>/delete", data="<form_data>")] // доробити редірект як у коментарях
+pub async fn delete_item(db: &State<DatabaseConnection>,item_id: i32, form_data: Form<DeleteCommUrl>) -> Redirect {
     match delete_item_f(db, item_id).await {
         Ok(_) => {
-            return Redirect::to(uri!(get_items))
+                return Redirect::to(form_data.redirect_url.clone())
         },
-        Err(_) => return Redirect::to(format!("/items/{}",item_id))
+        Err(_) => return Redirect::to(form_data.redirect_url.clone())
     }
 }
 

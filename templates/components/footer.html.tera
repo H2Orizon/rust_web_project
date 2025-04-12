@@ -1,0 +1,6 @@
+<footer class="bg-dark text-light mt-5 py-3">
+    <div class="container text-center">
+      <p class="mb-0">&copy; {{ now() | date(format="%Y") }} MyShop. Усі права захищено.</p>
+      <small>Проєкт створено на Rust + Rocket 🚀</small>
+    </div>
+  </footer>

@@ -95,6 +95,7 @@ pub async fn get_all_users(db: &DatabaseConnection) -> Result<Vec<UserDTO>, sea_
     let user_dtos: Vec<UserDTO> = 
     users.into_iter()
     .map(|usr| UserDTO{
+        id: usr.id,
         username: usr.username,
         email: usr.email,
         phone_num: usr.phone_num,
@@ -118,7 +119,9 @@ pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &E
 
 pub async fn get_user_profile(db: &DatabaseConnection, user_id: i32) -> Result<UserDTO, UserError> {
     let user = get_user(db, user_id).await?;
-    Ok(UserDTO { username: user.username, 
+    Ok(UserDTO {
+        id: user.id,
+        username: user.username, 
         email: user.email, 
         phone_num: user.phone_num, 
         role: user.role,

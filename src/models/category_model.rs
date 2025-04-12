@@ -22,6 +22,11 @@ pub struct CategoryDTO{
     pub name: String
 }
 
+#[derive(FromForm)]
+pub struct DeleteCommUrl {
+    pub redirect_url: String,
+}
+
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "crate::models::item_model::Entity")]

@@ -1,7 +1,11 @@
 {% extends "base" %}
 {% block title %}{{ item.name }}{% endblock %}
+{% block scripts %}
+
+{% endblock %}
 
 {% block content %}
+<script src="/static/javascript/comment-edit.js"></script>
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center">
         <h1>{{ item.name }}</h1>
@@ -22,11 +26,10 @@
     {% endif %}
 
     <!-- Image Carousel -->
-    {% if item.imgs|length > 0 %}
     <div id="itemCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
         <div class="carousel-inner">
             {% for img in item.imgs %}
-            <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+             <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
                 <div class="text-center">
                     <img src="/uploads/{{ img.img_url }}" class="img-fluid rounded" style="max-height: 400px;" onerror="this.src='/uploads/default/default_user_img.png'" alt="Image">
                 </div>
@@ -35,6 +38,7 @@
                 <div class="text-center mt-2">
                     <form action="/items/{{ item_id }}/{{ img.id }}/delete" method="post" class="d-inline">
                         <input type="hidden" name="_method" value="DELETE">
+                        <input type="hidden" name="redirect_url" value="{{ delete_url  }}">
                         <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
                     </form>
 
@@ -54,7 +58,6 @@
             <span class="carousel-control-next-icon"></span>
         </button>
     </div>
-    {% endif %}
 
     <!-- Add New Image -->
     {% if user_id is defined and user_id == item.user_id %}
@@ -80,14 +83,22 @@
     <div class="border p-3 mb-3 rounded">
         <div class="d-flex justify-content-between">
             <strong>{{ comment.user_name }}</strong>
-            {# {% if user_id is defined and user_id == comment.user_id %} #}
+            {% if user_id is defined and user_id == comment.user_id %}
+            <button class="btn btn-sm btn-outline-secondary" onclick="editComment('{{ comment.id }}')">Редагувати</button>
             <form action="/items/{{item_id}}/{{comment.id}}/delete_comment" method="post">
                 <input type="hidden" name="_method" value="delete">
+                <input type="hidden" name="redirect_url" value="{{ redirect_url  }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
             </form>
-            {# {% endif %} #}
+            {% endif %}
         </div>
         <p class="mb-0">{{ comment.content }}</p>
+
+        <form id="edit-form-{{ comment.id }}" class="mt-2 d-none" onsubmit="submitEdit(event, '{{ comment.id }}', '{{ item_id }}')">
+            <textarea class="form-control mb-2" id="edit-content-{{ comment.id }}">{{ comment.content }}</textarea>
+            <button type="submit" class="btn btn-sm btn-success">Зберегти</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ comment.id }}')">Скасувати</button>
+        </form>
     </div>
     {% endfor %}
 </div>

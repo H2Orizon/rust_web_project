@@ -55,6 +55,7 @@ pub struct LogInUserForm {
 
 #[derive(Serialize)]
 pub struct UserDTO {
+    pub id: i32,
     pub username: String,
     pub email: String,
     pub phone_num: String,
