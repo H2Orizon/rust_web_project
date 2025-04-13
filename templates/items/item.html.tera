@@ -1,11 +1,12 @@
 {% extends "base" %}
 {% block title %}{{ item.name }}{% endblock %}
-{% block scripts %}
 
-{% endblock %}
 
 {% block content %}
-<script src="/static/javascript/comment-edit.js"></script>
+    {% block scripts %}
+    <script src="/static/javascript/comment-edit.js"></script>
+    {% endblock %}
+
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center">
         <h1>{{ item.name }}</h1>
@@ -95,6 +96,7 @@
         <p class="mb-0">{{ comment.content }}</p>
 
         <form id="edit-form-{{ comment.id }}" class="mt-2 d-none" onsubmit="submitEdit(event, '{{ comment.id }}', '{{ item_id }}')">
+            <input type="hidden" name="_method" value="patch">
             <textarea class="form-control mb-2" id="edit-content-{{ comment.id }}">{{ comment.content }}</textarea>
             <button type="submit" class="btn btn-sm btn-success">Зберегти</button>
             <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ comment.id }}')">Скасувати</button>

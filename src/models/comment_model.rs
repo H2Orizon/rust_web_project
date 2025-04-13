@@ -1,5 +1,5 @@
 use sea_orm::entity::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::models::{item_model, user_model};
 
 #[derive(Clone, Debug, DeriveEntityModel, PartialEq)]
@@ -12,7 +12,7 @@ pub struct Model{
     pub content: String
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Debug, Deserialize, Serialize)]
 pub struct CommentForm{
     pub content: String
 }

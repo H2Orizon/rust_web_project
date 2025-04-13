@@ -10,23 +10,21 @@ function cancelEdit(id) {
     document.getElementById(`comment-text-${id}`).style.display = "block";
 }
 
-async function submitEdit(event, commentId, itemId) {
+function submitEdit(event, commentId, itemId) {
     event.preventDefault();
     const content = document.getElementById(`edit-content-${commentId}`).value;
 
-    const response = await fetch(`/items/${itemId}/${commentId}/edit_comment`, {
-        method: "POST",
+    fetch(`/items/${itemId}/${commentId}/edit_comment`, {
+        method: "PATCH",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({ content })
+    }).then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert("Не вдалося оновити коментар.");
+        }
     });
-
-    if (response.ok) {
-        const data = await response.json();
-        document.getElementById(`comment-text-${commentId}`).textContent = data.updated_content;
-        cancelEdit(commentId);
-    } else {
-        alert("Не вдалося оновити коментар.");
-    }
 }
