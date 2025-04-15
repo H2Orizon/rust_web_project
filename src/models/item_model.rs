@@ -1,5 +1,6 @@
 use sea_orm::entity::prelude::*;
 use serde::Serialize;
+use validator_derive::Validate;
 use crate::models::{category_model, user_model, comment_model};
 
 use super::img_for_item::{self, ImgItemDTO};
@@ -16,11 +17,14 @@ pub struct Model{
     pub user_id: i32
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Validate)]
 pub struct NewItemForm{
+    #[validate(length(min=3, message="Назва товару не менше 3 символа"))]
     pub name: String,
     pub category_id: i32,
+    #[validate(range(min= 0.0))]
     pub price: f32,
+    #[validate(length(min=10, message="Опис товару не менше 10 символа"))]
     pub description: String
 }
 

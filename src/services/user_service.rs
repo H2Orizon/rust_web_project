@@ -3,6 +3,7 @@ use argon2::{ Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use argon2::password_hash::{SaltString, rand_core::OsRng};
 use sea_orm::{Set, ActiveModelTrait, DatabaseConnection, EntityTrait, QueryFilter, ColumnTrait};
 use thiserror::Error;
+use validator::Validate;
 
 use super::help_service::delete_image;
 
@@ -16,6 +17,8 @@ pub enum UserError {
     InvalidPassword,
     #[error("PasswordsDoNotMatch")]
     PasswordsDoNotMatch,
+    #[error("Validation failed: {0}")]
+    ValidationError(validator::ValidationErrors)
 }
 
 fn verify_password(password: &str, hash: &str) -> bool {
@@ -28,6 +31,8 @@ fn verify_password(password: &str, hash: &str) -> bool {
 }
 
 pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Result<(), UserError>{
+    form_data.validate().map_err(|e| UserError::ValidationError(e))?;
+
     let salt = SaltString::generate(&mut OsRng);
     let argon = Argon2::default();
     let password_hash = argon.hash_password(form_data.password.as_bytes(), &salt)
@@ -55,6 +60,8 @@ pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Re
 }
 
 pub async fn change_password_f(db: &DatabaseConnection,form_data: &ChangePasswordForm, user_id: i32) -> Result<(), UserError> {
+    form_data.validate().map_err(|e| UserError::ValidationError(e))?;
+
     let salt = SaltString::generate(&mut OsRng);
     let argon = Argon2::default();
     let user = get_user(db, user_id).await?;
@@ -107,6 +114,8 @@ pub async fn get_all_users(db: &DatabaseConnection) -> Result<Vec<UserDTO>, sea_
 }
 
 pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &EditUserForm) -> Result<(), UserError>{
+    form_data.validate().map_err(|e| UserError::ValidationError(e))?;
+
     let user = get_user(db, user_id).await?;
     let mut user_edit: ActiveModel = user.into();
     user_edit.email = Set(form_data.email.clone());

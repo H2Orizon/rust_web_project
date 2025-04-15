@@ -1,5 +1,6 @@
 use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, DbErr, EntityTrait, QueryFilter};
 use thiserror::Error;
+use validator::Validate;
 
 use crate::{models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
         item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}}, services::img_for_items_services::get_all_item_imgs};
@@ -13,7 +14,9 @@ pub enum ItemError {
     #[error("Category not found")]
     CategoryNotFound,
     #[error("Item not found")]
-    ItemNotFound
+    ItemNotFound,
+    #[error("Validation failed: {0}")]
+    ValidationError(validator::ValidationErrors),    
 }
 
 pub async fn get_all_item(db: &DatabaseConnection) -> Result<Vec<ItemDTO>, sea_orm::DbErr> {
@@ -81,6 +84,8 @@ pub async fn get_one_item(db: &DatabaseConnection, item_id: i32) -> Result<ItemD
 }
 
 pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory) -> Result<(), ItemError> {
+    form_data.validate().map_err(|e| ItemError::ValidationError(e))?;
+
     let new_category = ActiveModelCategory{
         name: Set(form_data.name.clone()),
         ..Default::default()
@@ -97,7 +102,9 @@ pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory)
     }
 }
 
-pub async fn creat_new_item(db: &DatabaseConnection, form_data: &NewItemForm, user_id: i32) -> Result<(), ItemError> {
+pub async fn create_new_item(db: &DatabaseConnection, form_data: &NewItemForm, user_id: i32) -> Result<(), ItemError> {
+    form_data.validate().map_err(|e| ItemError::ValidationError(e))?;
+
     let new_item = ActiveModelItem{
         name: Set(form_data.name.clone()),
         category_id: Set(form_data.category_id.clone()),
@@ -106,7 +113,7 @@ pub async fn creat_new_item(db: &DatabaseConnection, form_data: &NewItemForm, us
         user_id: Set(user_id),
         ..Default::default()
     };
-    println!("Нова катигорія: {:?}", new_item);
+    println!("Нова ітем: {:?}", new_item);
     match new_item.insert(db).await {
         Ok(_) => {
             println!("Товар успішно додана!");

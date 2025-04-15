@@ -61,7 +61,7 @@
                                 {% if user is defined and user.id == user_in_jar %}
                                 <div class="ms-3 d-flex flex-column align-items-end">
                                     <button class="btn btn-sm btn-outline-primary mb-1" onclick="editComment('{{ comment.id }}')">Редагувати</button>
-                                    <form action="/items/{{comment.item_id}}/{{comment.id}}/delete_comment" method="post">
+                                    <form action="/items/{{comment.id}}/delete_comment" method="post">
                                         <input type="hidden" name="_method" value="delete">
                                         <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
@@ -98,7 +98,7 @@
                             {% if user is defined and user.id == user_in_jar%}
                             <form action="/items/{{ item.id }}/delete" method="post" class="ms-3">
                                 <input type="hidden" name="_method" value="DELETE">
-                                <input type="hidden" name="redirect_url" value="{{ delete_url  }}">
+                                <input type="hidden" name="redirect_url" value="{{ redirect_url  }}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
                             </form>
                             <a href="/items/{{item.id}}/item_edit" class="btn btn-primary-outline">Редагувати</a>

@@ -53,7 +53,6 @@ pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) ->
             match get_user_profile(db.inner(), user_id).await {
                 Ok(user) =>{
                     let redirect_url = format!("/profile");
-                    let delete_url = format!("/profile");
                     let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
                     let user_item = get_all_user_item(db, user_id).await.unwrap_or_default();
                     return Template::render("user/profile", context!{
@@ -62,7 +61,6 @@ pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) ->
                         comments: user_comments,
                         items: user_item,
                         redirect_url: redirect_url,
-                        delete_url: delete_url,
                         user_in_jar: user_id
                     })
                 }
@@ -132,7 +130,7 @@ pub async fn patch_edit_profile(db: &State<DatabaseConnection>, cookies: &Cookie
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
             match edit_profile_f(db, user_id, &form_data).await {
                 Ok(_) => return Redirect::to(uri!(profile)),
-                Err(_) => return Redirect::to(uri!(edit_profile))
+                Err(_) => return Redirect::to("/user/edit_profile")
             }
         }
     }
@@ -186,7 +184,7 @@ pub async fn patch_change_password(db: &State<DatabaseConnection>, cookies: & Co
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
             match change_password_f(db, &form_data.into_inner(), user_id).await {
                 Ok(_) => return Redirect::to(uri!(profile)),
-                Err(_) => return Redirect::to(uri!(change_password))
+                Err(_) => return Redirect::to("/user/change_password")
             }
         }
     }

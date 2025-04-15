@@ -22,6 +22,7 @@
     {% if user_id is defined and user_id == item.user_id %}
         <form action="/items/{{item_id}}/delete" method="post" class="mb-4">
             <input type="hidden" name="_method" value="DELETE">
+            <input type="hidden" name="redirect_url" value="/items">
             <button type="submit" class="btn btn-danger">Видалити товар</button>
         </form>
     {% endif %}
@@ -39,7 +40,7 @@
                 <div class="text-center mt-2">
                     <form action="/items/{{ item_id }}/{{ img.id }}/delete" method="post" class="d-inline">
                         <input type="hidden" name="_method" value="DELETE">
-                        <input type="hidden" name="redirect_url" value="{{ delete_url  }}">
+                        <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
                         <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
                     </form>
 
@@ -86,9 +87,9 @@
             <strong>{{ comment.user_name }}</strong>
             {% if user_id is defined and user_id == comment.user_id %}
             <button class="btn btn-sm btn-outline-secondary" onclick="editComment('{{ comment.id }}')">Редагувати</button>
-            <form action="/items/{{item_id}}/{{comment.id}}/delete_comment" method="post">
+            <form action="/items/{{comment.id}}/delete_comment" method="post">
                 <input type="hidden" name="_method" value="delete">
-                <input type="hidden" name="redirect_url" value="{{ redirect_url  }}">
+                <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
                 <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
             </form>
             {% endif %}

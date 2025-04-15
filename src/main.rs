@@ -13,6 +13,7 @@ use crate::db::connect;
 mod controllers;
 mod services;
 mod models;
+mod validators;
 mod db;
 
 #[launch]

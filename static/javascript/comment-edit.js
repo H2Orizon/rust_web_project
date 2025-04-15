@@ -14,7 +14,7 @@ function submitEdit(event, commentId, itemId) {
     event.preventDefault();
     const content = document.getElementById(`edit-content-${commentId}`).value;
 
-    fetch(`/items/${itemId}/${commentId}/edit_comment`, {
+    fetch(`/items/${commentId}/edit_comment`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json"

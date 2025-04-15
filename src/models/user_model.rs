@@ -1,7 +1,9 @@
 use sea_orm::entity::prelude::*;
 use rocket::form::FromForm;
 use serde::Serialize;
+use validator_derive::Validate;
 use crate::models::item_model;
+use crate::validators::{password_validator::validator_password, phone_validator::validate_phone_number};
 
 
 // enum Roles {
@@ -23,32 +25,43 @@ pub struct Model {
     pub img_url: String
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Validate)]
 pub struct NewUserForm {
+    #[validate(length(min=3, message="Юзернейм повинин бути не менше 3 символів"))]
     pub username: String,
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 8, message = "Пароль має бути не менше 8 символів"))]
+    #[validate(custom(function = "validator_password"))]
     pub password: String,
+    #[validate(custom(function = "validate_phone_number"))]
     pub phone_num: String,
     pub role: String,
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Validate)]
 pub struct EditUserForm {
+    #[validate(length(min=3, message="Юзернейм повинин бути не менше 3 символів"))]
     pub username: String,
+    #[validate(email)]
     pub email: String,
+    #[validate(custom(function = "validate_phone_number"))]
     pub phone_num: String,
     pub role: String,
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Validate)]
 pub struct ChangePasswordForm {
     pub old_password: String,
     pub new_password: String,
+    #[validate(length(min = 8, message = "Пароль має бути не менше 8 символів"))]
+    #[validate(custom(function = "validator_password"))]
     pub new_password_confirm: String
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Validate)]
 pub struct LogInUserForm {
+    #[validate(email)]
     pub email: String,
     pub password: String
 }

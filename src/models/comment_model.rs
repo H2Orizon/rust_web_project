@@ -1,5 +1,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use validator_derive::Validate;
 use crate::models::{item_model, user_model};
 
 #[derive(Clone, Debug, DeriveEntityModel, PartialEq)]
@@ -12,8 +13,9 @@ pub struct Model{
     pub content: String
 }
 
-#[derive(FromForm, Debug, Deserialize, Serialize)]
+#[derive(FromForm, Debug, Deserialize, Serialize, Validate)]
 pub struct CommentForm{
+    #[validate(length(min=5, message="Довжина коментаря не менше 5 сиволів"))]
     pub content: String
 }
 

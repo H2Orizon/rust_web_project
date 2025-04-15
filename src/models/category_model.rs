@@ -1,6 +1,7 @@
 use sea_orm::entity::prelude::*;
 use rocket::form::FromForm;
 use serde::Serialize;
+use validator_derive::Validate;
 use crate::models::item_model;
 
 #[derive(Clone, Debug, DeriveEntityModel)]
@@ -11,8 +12,9 @@ pub struct Model{
     pub name: String
 }
 
-#[derive(FromForm)]
+#[derive(FromForm, Validate)]
 pub struct NewCategory{
+    #[validate(length(min=3, message = "Назва катигорії має бути не менше 3 символів"))]
     pub name: String
 }
 

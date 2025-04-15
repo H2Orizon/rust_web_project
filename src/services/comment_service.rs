@@ -1,13 +1,16 @@
 use crate::models::{comment_model::{self, ActiveModel, CommentDTO, CommentForm, Entity as CommentEntity}, item_model::Entity as ItemEntity, user_model::Entity as UserEntity};
 use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, EntityTrait, ModelTrait, QueryFilter};
 use thiserror::Error;
+use validator::Validate;
 
 #[derive(Debug, Error)]
 pub enum CommentError {
     #[error("Failed to insert user into database")]
     DatabaseError(#[from] sea_orm::DbErr),
     #[error("Comment not found")]
-    CommentNotFound
+    CommentNotFound,
+    #[error("Validation failed: {0}")]
+    ValidationError(validator::ValidationErrors),
 }
 
 pub async fn get_all_item_comments(db: &DatabaseConnection, item_id: i32) -> Result<Vec<CommentDTO>, sea_orm::DbErr>{
@@ -73,6 +76,8 @@ pub async fn get_all_user_comments(db: &DatabaseConnection, user_id: i32) -> Res
 // }
 
 pub async fn updata_comment(db: &DatabaseConnection, comment_id: i32, form_data: &CommentForm) ->  Result<(), CommentError>{
+    form_data.validate().map_err(|e| CommentError::ValidationError(e))?;
+
     let comment = CommentEntity::find_by_id(comment_id)
     .one(db)
     .await
@@ -86,6 +91,8 @@ pub async fn updata_comment(db: &DatabaseConnection, comment_id: i32, form_data:
 }
 
 pub async fn create_comment(db: &DatabaseConnection, user_id: i32, item_id: i32, form_data: &CommentForm) -> Result<(), CommentError> {
+    form_data.validate().map_err(|e| CommentError::ValidationError(e))?;
+
     let new_comment = ActiveModel{
         user_id: Set(user_id),
         item_id: Set(item_id),

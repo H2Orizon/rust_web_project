@@ -3,7 +3,7 @@ use rocket_dyn_templates::{Template,context};
 use sea_orm::DatabaseConnection;
 
 use crate::{models::{category_model::{DeleteCommUrl, NewCategory}, item_model::NewItemForm}, 
-services::{comment_service::get_all_item_comments, help_service::{delete_image, file_load_for_item, UploadForm}, img_for_items_services::{add_img_to_item, delete_image_db, get_img_url_as_string}, item_service::{creat_new_item, create_category_f, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}}};
+services::{comment_service::get_all_item_comments, help_service::{delete_image, file_load_for_item, UploadForm}, img_for_items_services::{add_img_to_item, delete_image_db, get_img_url_as_string}, item_service::{create_new_item, create_category_f, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}}};
 
 #[get("/items")]
 pub async fn get_items(db: &State<DatabaseConnection>) -> Template {
@@ -27,13 +27,12 @@ pub async fn post_create_category(db: &State<DatabaseConnection>, form_data: For
 #[get("/<item_id>")]
 pub async fn get_item(db: &State<DatabaseConnection>, item_id: i32, cookies: &CookieJar<'_>) -> Template {
     let redirect_url = format!("/items/{}",item_id);
-    let delete_url = format!("/items/{}",item_id);
     let user_id = cookies.get_private("user_id")
         .and_then(|cookie| cookie.value().parse::<i32>().ok());
     match get_one_item(db,item_id).await{
         Ok(item) => {
             let comment_dtos = get_all_item_comments(db, item_id).await.unwrap_or_default();
-            Template::render("items/item", context! {item: item, item_id:item_id, comments:comment_dtos, user_id:user_id, redirect_url:redirect_url, delete_url:delete_url})
+            Template::render("items/item", context! {item: item, item_id:item_id, comments:comment_dtos, user_id:user_id, redirect_url:redirect_url})
         },
         Err(_) => Template::render("error/403", context! { message: "Invalid session" }),
     }
@@ -54,9 +53,9 @@ pub async fn create(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>) -> 
 pub async fn post_create(db: &State<DatabaseConnection>, form_data: Form<NewItemForm>, cookies: &CookieJar<'_>) -> Redirect {
     if let Some(user_id_cookie) = cookies.get_private("user_id"){
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
-            match creat_new_item(db.inner(), &form_data, user_id).await {
+            match create_new_item(db.inner(), &form_data, user_id).await {
                 Ok(_) => return Redirect::to(uri!(get_items)),
-                Err(_) => return Redirect::to(uri!(create))
+                Err(_) => return Redirect::to("/items/item_create")
             }
         }
     }
