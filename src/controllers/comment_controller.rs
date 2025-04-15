@@ -9,7 +9,7 @@ use crate::models::comment_model::CommentForm;
 
 use crate::services::comment_service::{create_comment, delete_comment_f, updata_comment};
 
-#[post("/<item_id>/post_comment", data="<form_data>")]
+#[post("/<item_id>/post_comment", data="<form_data>")] //додати flash якщо помилка
 pub async fn post_coments(db: &State<DatabaseConnection>, item_id: i32, form_data: Form<CommentForm>, cookies: &CookieJar<'_>) -> Redirect {
     if let Some(user_id_cookie) = cookies.get_private("user_id"){
         if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
@@ -36,7 +36,7 @@ pub async fn delete_comment(db: &State<DatabaseConnection> ,form_data: Form<Dele
     Redirect::to("/log_in")
 }
 
-#[patch("/<comment_id>/edit_comment", data = "<form_data>")]
+#[patch("/<comment_id>/edit_comment", data = "<form_data>")] //додати flash якщо помилка
 pub async fn edit_comment(db: &State<DatabaseConnection>, form_data: Json<CommentForm>, comment_id: i32) -> Result<Json<CommentForm>, Status>{
     updata_comment(db, comment_id, &form_data)
         .await

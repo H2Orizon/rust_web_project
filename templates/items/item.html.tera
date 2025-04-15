@@ -70,6 +70,10 @@
     </form>
     {% endif %}
 
+
+
+    <!-- Comments -->
+    <h4>Коментарі</h4>
     <!-- Add Comment -->
     <form action="/items/{{item_id}}/post_comment" method="post" class="mb-3">
         <div class="mb-3">
@@ -79,8 +83,6 @@
         <button type="submit" class="btn btn-success">Додати коментар</button>
     </form>
 
-    <!-- Comments -->
-    <h4>Коментарі</h4>
     {% for comment in comments %}
     <div class="border p-3 mb-3 rounded">
         <div class="d-flex justify-content-between">
