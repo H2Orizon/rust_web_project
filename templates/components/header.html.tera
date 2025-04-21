@@ -9,10 +9,10 @@
           <li class="nav-item">
             <a class="nav-link" href="/items">Товари</a>
           </li>
+        {% if user %}
           <li class="nav-item">
             <a class="nav-link" href="/profile">Профіль</a>
           </li>
-        {% if user_id is defined %}
           <li class="nav-item">
             <form action="/profile/log_out" method="post" class="d-inline">
               <button class="btn btn-sm btn-outline-light ms-2" type="submit">Вийти</button>

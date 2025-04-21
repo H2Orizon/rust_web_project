@@ -126,7 +126,7 @@ pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &E
     Ok(())
 }
 
-pub async fn get_user_profile(db: &DatabaseConnection, user_id: i32) -> Result<UserDTO, UserError> {
+pub async fn get_userDTO(db: &DatabaseConnection, user_id: i32) -> Result<UserDTO, UserError> {
     let user = get_user(db, user_id).await?;
     Ok(UserDTO {
         id: user.id,

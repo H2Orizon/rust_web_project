@@ -5,13 +5,6 @@ use validator_derive::Validate;
 use crate::models::item_model;
 use crate::validators::{password_validator::validator_password, phone_validator::validate_phone_number};
 
-
-// enum Roles {
-//     ADMIN,
-//     USER,
-//     SELLER
-// }
-
 #[derive(Clone, Debug, DeriveEntityModel)]
 #[sea_orm(table_name = "user")]
 pub struct Model {

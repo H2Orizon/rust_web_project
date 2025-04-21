@@ -1,110 +1,125 @@
 {% extends "base" %}
 {% block title %}{{ item.name }}{% endblock %}
 
-
 {% block content %}
     {% block scripts %}
     <script src="/static/javascript/comment-edit.js"></script>
     {% endblock %}
 
 <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <h1>{{ item.name }}</h1>
-        {% if user_id is defined and user_id == item.user_id %}
-            <a href="/items/{{ item_id }}/edit" class="btn btn-outline-primary">Редагувати товар</a>
-        {% endif %}
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <img src="/uploads/{{ creator.img_url | default(value='default/default_user_img.png') }}"
+               onerror="this.src='/uploads/default/default_user_img.png'"
+               class="rounded-circle mb-3" style="width: 100px; height: 100px;" alt="User image">
+          <h5 class="card-title">{{ creator.username | default(value="Невідомий") }}</h5>
+          <p class="text-muted small">ID: {{ item.user_id }}</p>
+        </div>
+      </div>
     </div>
 
-    <p><strong>Опис:</strong> {{ item.description }}</p>
-    <p><strong>Ціна:</strong> {{ item.price }}</p>
-    <p><strong>Категорія:</strong> {{ item.category }}</p>
+    <!-- Main content -->
+    <div class="col-md-9">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1>{{ item.name }}</h1>
+        {% if user is defined and (user.id == item.user_id or user.role == "admin") %}
+          <a href="/items/{{ item_id }}/edit" class="btn btn-outline-primary">Редагувати товар</a>
+        {% endif %}
+      </div>
 
-    {% if user_id is defined and user_id == item.user_id %}
-        <form action="/items/{{item_id}}/delete" method="post" class="mb-4">
-            <input type="hidden" name="_method" value="DELETE">
-            <input type="hidden" name="redirect_url" value="/items">
-            <button type="submit" class="btn btn-danger">Видалити товар</button>
-        </form>
-    {% endif %}
+      <p><strong>Опис:</strong> {{ item.description }}</p>
+      <p><strong>Ціна:</strong> {{ item.price }}</p>
+      <p><strong>Категорія:</strong> {{ item.category }}</p>
 
-    <!-- Image Carousel -->
-    <div id="itemCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+      {% if user and (user.id == item.user_id or user.role == "admin") %}
+      <form action="/items/{{item_id}}/delete" method="post" class="mb-4">
+          <input type="hidden" name="_method" value="DELETE">
+          <input type="hidden" name="redirect_url" value="/items">
+          <button type="submit" class="btn btn-danger">Видалити товар</button>
+      </form>
+      {% endif %}
+
+      <!-- Image Carousel -->
+      <div id="itemCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
         <div class="carousel-inner">
-            {% for img in item.imgs %}
-             <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
-                <div class="text-center">
-                    <img src="/uploads/{{ img.img_url }}" class="img-fluid rounded" style="max-height: 400px;" onerror="this.src='/uploads/default/default_user_img.png'" alt="Image">
-                </div>
-
-                {% if user_id is defined and user_id == item.user_id %}
-                <div class="text-center mt-2">
-                    <form action="/items/{{ item_id }}/{{ img.id }}/delete" method="post" class="d-inline">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
-                    </form>
-
-                    <form action="" method="post" enctype="multipart/form-data" class="d-inline ms-2">
-                        <input type="file" name="file" style="display: inline-block; width: auto;" class="form-control-sm" required>
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">Змінити</button>
-                    </form>
-                </div>
-                {% endif %}
+          {% for img in item.imgs %}
+          <div class="carousel-item {% if loop.index == 1 %}active{% endif %}">
+            <div class="text-center">
+              <img src="/uploads/{{ img.img_url }}" class="img-fluid rounded" style="max-height: 400px;" onerror="this.src='/uploads/default/default_user_img.png'" alt="Image">
             </div>
-            {% endfor %}
+
+            {% if user and (user.id == item.user_id or user.role == "admin") %}
+            <div class="text-center mt-2">
+              <form action="/items/{{ item_id }}/{{ img.id }}/delete" method="post" class="d-inline">
+                <input type="hidden" name="_method" value="DELETE">
+                <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+              </form>
+
+              <form action="" method="post" enctype="multipart/form-data" class="d-inline ms-2">
+                <input type="file" name="file" style="display: inline-block; width: auto;" class="form-control-sm" required>
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Змінити</button>
+              </form>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#itemCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
+          <span class="carousel-control-prev-icon"></span>
         </button>
         <button class="carousel-control-next" type="button" data-bs-target="#itemCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
+          <span class="carousel-control-next-icon"></span>
         </button>
-    </div>
+      </div>
 
-    <!-- Add New Image -->
-    {% if user_id is defined and user_id == item.user_id %}
-    <form action="/items/{{item_id}}/add_item_img" method="post" enctype="multipart/form-data" class="mb-4">
+      <!-- Add New Image -->
+      {% if user and (user.id == item.user_id or user.role == "admin") %}
+      <form action="/items/{{item_id}}/add_item_img" method="post" enctype="multipart/form-data" class="mb-4">
         <label for="file" class="form-label">Додати нову картинку</label>
         <input type="file" name="file" id="file" class="form-control mb-2" required>
         <button type="submit" class="btn btn-primary">Завантажити</button>
-    </form>
-    {% endif %}
+      </form>
+      {% endif %}
 
-
-
-    <!-- Comments -->
-    <h4>Коментарі</h4>
-    <!-- Add Comment -->
-    <form action="/items/{{item_id}}/post_comment" method="post" class="mb-3">
+      <!-- Comments -->
+      <h4>Коментарі</h4>
+      <!-- Add Comment -->
+      <form action="/items/{{item_id}}/post_comment" method="post" class="mb-3">
         <div class="mb-3">
-            <label for="content" class="form-label">Коментар</label>
-            <textarea name="content" id="content" class="form-control" required></textarea>
+          <label for="content" class="form-label">Коментар</label>
+          <textarea name="content" id="content" class="form-control" required></textarea>
         </div>
         <button type="submit" class="btn btn-success">Додати коментар</button>
-    </form>
+      </form>
 
-    {% for comment in comments %}
-    <div class="border p-3 mb-3 rounded">
+      {% for comment in comments %}
+      <div class="border p-3 mb-3 rounded">
         <div class="d-flex justify-content-between">
-            <strong>{{ comment.user_name }}</strong>
-            {% if user_id is defined and user_id == comment.user_id %}
-            <button class="btn btn-sm btn-outline-secondary" onclick="editComment('{{ comment.id }}')">Редагувати</button>
-            <form action="/items/{{comment.id}}/delete_comment" method="post">
-                <input type="hidden" name="_method" value="delete">
-                <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
-                <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
-            </form>
-            {% endif %}
+          <strong>{{ comment.user_name }}</strong>
+          {% if user and (user.id == comment.user_id or user.role == "admin") %}
+          <button class="btn btn-sm btn-outline-secondary" onclick="editComment('{{ comment.id }}')">Редагувати</button>
+          <form action="/items/{{comment.id}}/delete_comment" method="post">
+            <input type="hidden" name="_method" value="delete">
+            <input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Видалити</button>
+          </form>
+          {% endif %}
         </div>
         <p class="mb-0">{{ comment.content }}</p>
 
         <form id="edit-form-{{ comment.id }}" class="mt-2 d-none" onsubmit="submitEdit(event, '{{ comment.id }}', '{{ item_id }}')">
-            <input type="hidden" name="_method" value="patch">
-            <textarea class="form-control mb-2" id="edit-content-{{ comment.id }}">{{ comment.content }}</textarea>
-            <button type="submit" class="btn btn-sm btn-success">Зберегти</button>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ comment.id }}')">Скасувати</button>
+          <input type="hidden" name="_method" value="patch">
+          <textarea class="form-control mb-2" id="edit-content-{{ comment.id }}">{{ comment.content }}</textarea>
+          <button type="submit" class="btn btn-sm btn-success">Зберегти</button>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('{{ comment.id }}')">Скасувати</button>
         </form>
+      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
+  </div>
 </div>
 {% endblock %}

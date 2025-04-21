@@ -8,7 +8,8 @@ use sea_orm::DatabaseConnection;
 use crate::models::user_model::{ChangePasswordForm, EditUserForm, LogInUserForm};
 use crate::services::comment_service::get_all_user_comments;
 use crate::services::item_service::get_all_user_item;
-use crate::services::user_service::{change_img, change_password_f, edit_profile_f, get_all_users, get_user_profile};
+use crate::services::session::UserSession;
+use crate::services::user_service::{change_img, change_password_f, edit_profile_f, get_all_users, get_userDTO};
 use crate::{models::user_model::NewUserForm, services::user_service::{create_user, log_in as log_inF}};
 use crate::services::help_service::{file_load,UploadForm};
 
@@ -71,53 +72,44 @@ pub async fn post_register(
 }
 
 #[get("/profile")]
-pub async fn profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>, flash: Option<FlashMessage<'_>>) -> Template{
-    if let Some(user_id_cookie) = cookies.get_private("user_id"){
-        if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
+pub async fn profile(db: &State<DatabaseConnection>, user_session: UserSession, flash: Option<FlashMessage<'_>>) -> Template{
+    let (flash_msg, flash_kind) = if let Some(f) = &flash {
+        (f.message(), f.kind())
+    } else {
+        ("", "")
+    };
 
-            let (flash_msg, flash_kind) = if let Some(f) = &flash {
-                (f.message(), f.kind())
-            } else {
-                ("", "")
-            };
-
-            match get_user_profile(db.inner(), user_id).await {
-                Ok(user) =>{
-                    let redirect_url = format!("/profile");
-                    let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
-                    let user_item = get_all_user_item(db, user_id).await.unwrap_or_default();
-                    return Template::render("user/profile", context!{
-                        title:"My profile",
-                        user:user,
-                        comments: user_comments,
-                        items: user_item,
-                        redirect_url: redirect_url,
-                        user_in_jar: user_id,
-                        flash_kind: flash_kind,
-                        flash_msg: flash_msg
-                    })
-                }
-                Err(_) => return Template::render("error/404", context! { 
-                    message: "User not found",
-                    flash_kind: flash_kind,
-                    flash_msg: flash_msg
-                })
-            }
+    match get_userDTO(db.inner(), user_session.user.id).await {
+        Ok(user) =>{
+            let redirect_url = format!("/profile");
+            let user_comments = get_all_user_comments(db, user.id).await.unwrap_or_default();
+            let user_item = get_all_user_item(db, user.id).await.unwrap_or_default();
+            return Template::render("user/profile", context!{
+                title:"My profile",
+                user: user,
+                comments: user_comments,
+                items: user_item,
+                redirect_url: redirect_url,
+                user_in_jar: user_session.user.id,
+                flash_kind: flash_kind,
+                flash_msg: flash_msg
+            })
         }
+        Err(_) => return Template::render("error/404", context! { 
+            message: "User not found",
+            flash_kind: flash_kind,
+            flash_msg: flash_msg
+        })
     }
-    Template::render("error/403", context! { message: "Invalid session" })
 }
 
 #[get("/<user_id>/profile")]
-pub async fn profile_user(db: &State<DatabaseConnection>, user_id: i32, cookies: &CookieJar<'_>) -> Result<Template, Redirect>{
-    if let Some(user_id_cookie) = cookies.get_private("user_id"){
-        if let Ok(user_in_jar) = user_id_cookie.value().parse::<i32>(){
-            if user_in_jar == user_id{
-                return Err(Redirect::to("/profile"));
-            }
-        }
+pub async fn profile_user(db: &State<DatabaseConnection>, user_id: i32, user_session: UserSession) -> Result<Template, Redirect>{
+    if user_id == user_session.user.id{
+        return Err(Redirect::to("/profile"));
     }
-    match get_user_profile(db.inner(), user_id).await {
+
+    match get_userDTO(db.inner(), user_id).await {
         Ok(user) =>{
             let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
             let user_item = get_all_user_item(db, user_id).await.unwrap_or_default();
@@ -152,7 +144,7 @@ pub async fn get_all_user(db: &State<DatabaseConnection>) -> Template {
 }
 
 #[get("/edit_profile")]
-pub fn edit_profile(cookies: &CookieJar<'_>, flash: Option<FlashMessage<'_>>) -> Template {
+pub fn edit_profile(user_session: UserSession, flash: Option<FlashMessage<'_>>) -> Template {
 
     let (flash_msg, flash_kind) = if let Some(f) = &flash {
         (f.message(), f.kind())
@@ -160,90 +152,77 @@ pub fn edit_profile(cookies: &CookieJar<'_>, flash: Option<FlashMessage<'_>>) ->
         ("", "")
     };
 
-    if let Some(user_id_cookie) = cookies.get_private("user_id"){
-        if let Ok(_user_id) = user_id_cookie.value().parse::<i32>(){
-            return Template::render("user/edit_profile", context!{
-            title:"edit_profile",
-            flash_kind: flash_kind,
-            flash_msg: flash_msg
-        });
-        }
+    if user_session.user.id != 0{
+        return Template::render("user/edit_profile", context!{
+        title:"edit_profile",
+        flash_kind: flash_kind,
+        flash_msg: flash_msg
+        })
     }
     Template::render("error/403", context! { message: "Invalid session" })
 }
 
 #[patch("/edit_profile", data = "<form_data>")]
-pub async fn patch_edit_profile(db: &State<DatabaseConnection>, cookies: &CookieJar<'_>, form_data: Form<EditUserForm>) -> Flash<Redirect> {
-    if let Some(user_id_cookie) = cookies.get_private("user_id"){
-        if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
-            match edit_profile_f(db, user_id, &form_data).await {
-                Ok(_) => return Flash::success( Redirect::to(uri!(profile)), "Дані аккаунт успішно змінено"),
-                Err(e) => return Flash::error( Redirect::to("/user/edit_profile"), e.to_string()),
-            }
+pub async fn patch_edit_profile(db: &State<DatabaseConnection>,user_session: UserSession, form_data: Form<EditUserForm>) -> Flash<Redirect> {
+    if user_session.user.id != 0{
+        match edit_profile_f(db, user_session.user.id, &form_data).await {
+            Ok(_) => return Flash::success( Redirect::to(uri!(profile)), "Дані аккаунт успішно змінено"),
+            Err(e) => return Flash::error( Redirect::to("/user/edit_profile"), e.to_string()),
         }
     }
     Flash::error(Redirect::to(uri!(log_in)), "Invalid session")
 }
 
 #[post("/add_img", data = "<form_data>")]
-pub async fn add_img<'r>(db: &State<DatabaseConnection>,form_data: Form<UploadForm<'r>>,cookies: &CookieJar<'_>) -> Redirect {
+pub async fn add_img<'r>(db: &State<DatabaseConnection>,form_data: Form<UploadForm<'r>>, user_session: UserSession) -> Flash<Redirect>{
     let dir = "user_img";
 
+    if user_session.user.id == 0{
+        return Flash::error( Redirect::to(uri!(log_in)), "Користувач не в сесії")
+    }
+    
     let filename = match file_load(form_data, &dir).await {
         Ok(name) => name,
         Err(_) => {
             eprintln!("Не вдалося зберегти файл");
-            return Redirect::to(uri!(profile))
+            return Flash::error( Redirect::to(uri!(profile)), "Не вдалося зберегти файл")
         }
     };
 
     println!("Файл збережено в: {}", filename);
 
-    let user_id = match cookies.get_private("user_id")
-        .and_then(|c| c.value().parse::<i32>().ok()) {
-            Some(id) => id,
-            None => {
-                eprintln!("Користувач не в сесії");
-                return Redirect::to(uri!(log_in))
-            }
-    };
-
-    if let Err(err) = change_img(db, user_id, filename).await {
+    if let Err(err) = change_img(db, user_session.user.id, filename).await {
         eprintln!("Помилка при оновленні картинки: {:?}", err);
     }
 
-    Redirect::to(uri!(profile))
+    Flash::success(Redirect::to(uri!(profile)),"Картинка успішно змінина")
 }
 
 
 #[get("/change_password")]
-pub fn change_password(cookies: & CookieJar<'_>, flash: Option<FlashMessage<'_>>) -> Template{
+pub fn change_password(user_session: UserSession, flash: Option<FlashMessage<'_>>) -> Template{
     let (flash_msg, flash_kind) = if let Some(f) = &flash {
         (f.message(), f.kind())
     } else {
         ("", "")
     };
 
-    if let Some(user_id_cookie) = cookies.get_private("user_id"){
-        if let Ok(_user_id) = user_id_cookie.value().parse::<i32>(){
-            return Template::render("user/change_password", context!{
-                title:"Зміна пароля",
-                flash_msg: flash_msg,
-                flash_kind: flash_kind
-            });
-        }
+    if user_session.user.id != 0{
+        return Template::render("user/change_password", context!{
+            title:"Зміна пароля",
+            flash_msg: flash_msg,
+            flash_kind: flash_kind
+        });
     }
     Template::render("error/403", context! { message: "Invalid session" })
 }
 
 #[patch("/change_password", data = "<form_data>")]
-pub async fn patch_change_password(db: &State<DatabaseConnection>, cookies: & CookieJar<'_>, form_data: Form<ChangePasswordForm>) -> Flash<Redirect> {
-    if let Some(user_id_cookie) = cookies.get_private("user_id"){
-        if let Ok(user_id) = user_id_cookie.value().parse::<i32>(){
-            match change_password_f(db, &form_data.into_inner(), user_id).await {
-                Ok(_) => return Flash::success(Redirect::to(uri!(profile)), "Пароль успішно змінино"),
-                Err(e) => return Flash::error( Redirect::to("/user/change_password"), e.to_string())
-            }
+pub async fn patch_change_password(db: &State<DatabaseConnection>, user_session: UserSession, form_data: Form<ChangePasswordForm>) -> Flash<Redirect> {
+    if user_session.user.id != 0{
+        match change_password_f(db, &form_data.into_inner(), user_session.user.id).await {
+            Ok(_) => return Flash::success(Redirect::to(uri!(profile)), "Пароль успішно змінино"),
+            Err(e) => return Flash::error( Redirect::to("/user/change_password"), e.to_string())
         }
     }
     Flash::error(Redirect::to(uri!(log_in)), "Invalid session")

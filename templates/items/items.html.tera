@@ -2,12 +2,21 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+
+{% block scripts %}
+    <script src="/static/js/item-filter.js"></script>
+{% endblock %}
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>{{ title }}</h1>
         <div>
-            <a href="/items/item_create" class="btn btn-success me-2">+ Новий товар</a>
-            <a href="/items/create_category" class="btn btn-primary">+ Нова категорія</a>
+            {% if user %}
+                <a href="/items/item_create" class="btn btn-success me-2">+ Новий товар</a>
+                {% if user.role == "admin" %}
+                    <a href="/items/create_category" class="btn btn-primary">+ Нова категорія</a>
+                {% endif %}
+            {% endif %}
         </div>
     </div>
 
@@ -22,7 +31,11 @@
         {% for item in items %}
         <div class="col">
             <div class="card h-100 shadow-sm">
-                {# <img src="/uploads/{{ item.preview_img_url | default('default/default_item_img.png') }}" class="card-img-top" alt="{{ item.name }}"> #}
+                {% if item.imgs | length > 0 %}
+                <img src="/uploads/{{ item.imgs.0.img_url }}" onerror="this.src='/uploads/default/default_item_img.png'" class="card-img-top img-fluid custom-img" alt="{{ item.name }}">
+            {% else %}
+                <img src="/uploads/default/default_item_img.png" class="card-img-top img-fluid custom-img" alt="{{ item.name }}">
+            {% endif %}
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">{{ item.name }}</h5>
                     <p class="card-text">Ціна: {{ item.price }} ₴</p>

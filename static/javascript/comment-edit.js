@@ -10,7 +10,7 @@ function cancelEdit(id) {
     document.getElementById(`comment-text-${id}`).style.display = "block";
 }
 
-function submitEdit(event, commentId, itemId) {
+function submitEdit(event, commentId) {
     event.preventDefault();
     const content = document.getElementById(`edit-content-${commentId}`).value;
 
