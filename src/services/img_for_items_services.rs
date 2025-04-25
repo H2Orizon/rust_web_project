@@ -33,7 +33,7 @@ pub async fn get_item_img(db: &DatabaseConnection, img_id: i32) -> Result<ImgIte
     Ok(ImgItemDTO { id:img_id, img_url: img.img_url })
 }
 
-pub async fn add_img_to_item(db: &DatabaseConnection, item_id: i32, file: String) -> Result<(), String> {
+pub async fn add_img_to_item(db: &DatabaseConnection, item_id: i32, file: String) -> Result<ImgItemDTO, String> {
     if !can_add_more_imgs(db, item_id).await.map_err(|e| e.to_string())?{
         return Err("Bruh".into());
     }
@@ -42,8 +42,8 @@ pub async fn add_img_to_item(db: &DatabaseConnection, item_id: i32, file: String
         img_url: Set(file),
         ..Default::default()
     };
-    new_img.insert(db).await.map_err(|e| e.to_string())?;
-    Ok(())
+    let inserted_img = new_img.insert(db).await.map_err(|e| e.to_string())?;
+    Ok(ImgItemDTO { id:inserted_img.id, img_url: inserted_img.img_url})
 }
 
 pub async fn get_img_url_as_string(db: &DatabaseConnection, img_id: i32) -> String {

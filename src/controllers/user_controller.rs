@@ -9,7 +9,7 @@ use crate::models::user_model::{ChangePasswordForm, EditUserForm, LogInUserForm}
 use crate::services::comment_service::get_all_user_comments;
 use crate::services::item_service::get_all_user_item;
 use crate::services::session::UserSession;
-use crate::services::user_service::{change_img, change_password_f, edit_profile_f, get_all_users, get_userDTO};
+use crate::services::user_service::{change_img, change_password_f, edit_profile_f, get_all_users, get_user_dto};
 use crate::{models::user_model::NewUserForm, services::user_service::{create_user, log_in as log_inF}};
 use crate::services::help_service::{file_load,UploadForm};
 
@@ -79,7 +79,7 @@ pub async fn profile(db: &State<DatabaseConnection>, user_session: UserSession, 
         ("", "")
     };
 
-    match get_userDTO(db.inner(), user_session.user.id).await {
+    match get_user_dto(db.inner(), user_session.user.id).await {
         Ok(user) =>{
             let redirect_url = format!("/profile");
             let user_comments = get_all_user_comments(db, user.id).await.unwrap_or_default();
@@ -109,7 +109,7 @@ pub async fn profile_user(db: &State<DatabaseConnection>, user_id: i32, user_ses
         return Err(Redirect::to("/profile"));
     }
 
-    match get_userDTO(db.inner(), user_id).await {
+    match get_user_dto(db.inner(), user_id).await {
         Ok(user) =>{
             let user_comments = get_all_user_comments(db, user_id).await.unwrap_or_default();
             let user_item = get_all_user_item(db, user_id).await.unwrap_or_default();

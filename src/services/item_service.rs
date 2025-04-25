@@ -2,8 +2,7 @@ use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnectio
 use thiserror::Error;
 use validator::Validate;
 
-use crate::{models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, 
-        item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}}, services::img_for_items_services::get_all_item_imgs};
+use crate::{models::{category_model::{ActiveModel as ActiveModelCategory, CategoryDTO, Entity as CategoryEntity, NewCategory}, item_model::{ActiveModel as ActiveModelItem, Entity as ItemEntity, ItemDTO, NewItemForm}}, services::img_for_items_services::get_all_item_imgs};
 
 use super::{comment_service::delete_all_item_comments, img_for_items_services::delete_all_item_img};
 
@@ -83,7 +82,7 @@ pub async fn get_one_item(db: &DatabaseConnection, item_id: i32) -> Result<ItemD
     })
 }
 
-pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory) -> Result<(), ItemError> {
+pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory) -> Result<CategoryDTO, ItemError> {
     form_data.validate().map_err(|e| ItemError::ValidationError(e))?;
 
     let new_category = ActiveModelCategory{
@@ -92,9 +91,14 @@ pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory)
     };
     println!("Нова катигорія: {:?}", new_category);
     match new_category.insert(db).await {
-        Ok(_) => {
+        Ok(new_category) => {
             println!("Катигорія успішно додана!");
-            Ok(())
+            Ok(
+                CategoryDTO { 
+                    id: new_category.id, 
+                    name: new_category.name 
+                }
+            )
         }Err(e) => {
             eprintln!(" Помилка під час вставки катигорії: {:?}", e);
             Err(ItemError::DatabaseError(e))
@@ -102,7 +106,7 @@ pub async fn create_category_f(db: &DatabaseConnection, form_data: &NewCategory)
     }
 }
 
-pub async fn create_new_item(db: &DatabaseConnection, form_data: &NewItemForm, user_id: i32) -> Result<(), ItemError> {
+pub async fn create_new_item(db: &DatabaseConnection, form_data: &NewItemForm, user_id: i32) -> Result<ItemDTO, ItemError> {
     form_data.validate().map_err(|e| ItemError::ValidationError(e))?;
 
     let new_item = ActiveModelItem{
@@ -115,9 +119,18 @@ pub async fn create_new_item(db: &DatabaseConnection, form_data: &NewItemForm, u
     };
     println!("Нова ітем: {:?}", new_item);
     match new_item.insert(db).await {
-        Ok(_) => {
+        Ok(new_item) => {
             println!("Товар успішно додана!");
-            Ok(())
+            Ok(ItemDTO { 
+                id: new_item.id, 
+                name: new_item.name, 
+                category: category_to_string(db, new_item.id).await, 
+                price: new_item.price, 
+                description: new_item.description, 
+                link_to: format!("/items/{}", new_item.id),
+                user_id: new_item.user_id,
+                imgs: get_all_item_imgs(db, new_item.id).await?,
+            })
         }Err(e) => {
             eprintln!(" Помилка під час вставки товарв: {:?}", e);
             Err(ItemError::DatabaseError(e))
@@ -144,7 +157,7 @@ pub async fn get_category(db: &DatabaseConnection, category_id: i32) -> Result<C
     Ok(CategoryDTO { id: category.id, name: category.name })
 }
 
-pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewItemForm) -> Result<(), ItemError> {
+pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewItemForm) -> Result<ItemDTO, ItemError> {
     let item = ItemEntity::find_by_id(item_id)
     .one(db)
     .await
@@ -156,8 +169,18 @@ pub async fn update_item(db: &DatabaseConnection, item_id: i32, form_data: &NewI
     up_item.price = Set(form_data.price);
     up_item.description = Set(form_data.description.clone());
 
-    up_item.update(db).await.map_err(ItemError::DatabaseError)?;
-    Ok(())
+    let inserted_item = up_item.update(db).await.map_err(ItemError::DatabaseError)?;
+    
+    Ok(ItemDTO { 
+        id: inserted_item.id, 
+        name: inserted_item.name, 
+        category: category_to_string(db, inserted_item.id).await, 
+        price: inserted_item.price, 
+        description: inserted_item.description, 
+        link_to: format!("/items/{}", inserted_item.id),
+        user_id: inserted_item.user_id, 
+        imgs: get_all_item_imgs(db, inserted_item.id).await?, 
+    })
 }
 
 pub async fn delete_item_f(db: &DatabaseConnection, item_id: i32) -> Result<(), DbErr> {

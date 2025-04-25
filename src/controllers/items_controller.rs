@@ -3,7 +3,7 @@ use rocket_dyn_templates::{Template,context};
 use sea_orm::DatabaseConnection;
 
 use crate::{models::{category_model::{DeleteCommUrl, NewCategory}, item_model::NewItemForm}, 
-services::{comment_service::get_all_item_comments, help_service::{delete_image, file_load_for_item, UploadForm}, img_for_items_services::{add_img_to_item, delete_image_db, get_img_url_as_string}, item_service::{create_category_f, create_new_item, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}, session::UserSession, user_service::get_userDTO}};
+services::{comment_service::get_all_item_comments, help_service::{delete_image, file_load_for_item, UploadForm}, img_for_items_services::{add_img_to_item, delete_image_db, get_img_url_as_string}, item_service::{create_category_f, create_new_item, delete_item_f, get_all_categoris, get_all_item, get_one_item, update_item}, session::UserSession, user_service::get_user_dto}};
 
 #[get("/items")]
 pub async fn get_items(db: &State<DatabaseConnection>, flash: Option<FlashMessage<'_>>, user_session: Option<UserSession>) -> Template {
@@ -71,7 +71,7 @@ pub async fn get_item(db: &State<DatabaseConnection>, item_id: i32, user_session
                 }
             };
             let user = user_session.user;
-            let creator = match get_userDTO(db, item.user_id).await {
+            let creator = match get_user_dto(db, item.user_id).await {
                 Ok(u) => u,
                 Err(_) => {
                     return Template::render("error/404", context! {
@@ -173,7 +173,7 @@ pub async fn patch_item_edit( db: &State<DatabaseConnection>, item_id: i32, form
     }
 
     match update_item(db, item_id, &form_data).await {
-        Ok(()) => Flash::success(Redirect::to(format!("/items/{}", item_id)), "Товар успішно змінено"),
+        Ok(_) => Flash::success(Redirect::to(format!("/items/{}", item_id)), "Товар успішно змінено"),
         Err(e) => Flash::error(Redirect::to(format!("/items/{}", item_id)), &e.to_string()),
     }
 }

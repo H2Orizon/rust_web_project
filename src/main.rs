@@ -1,5 +1,6 @@
 #[macro_use] extern crate rocket;
 
+use api::items_api::{add_img_to_item_api, create_category_api, delete_item_api, delete_item_img_api, get_item_api, get_items_api, item_create_api, item_edit_api};
 use controllers::comment_controller::{delete_comment, edit_comment, post_coments};
 use rocket::fs::{FileServer, relative};
 use controllers::items_controller::{create, create_category, delete_item, delete_item_img, get_item, get_items, item_edit, patch_item_edit, post_add_img_to_item, post_create, post_create_category};
@@ -14,6 +15,7 @@ mod controllers;
 mod services;
 mod models;
 mod validators;
+mod api;
 mod db;
 
 #[launch]
@@ -43,6 +45,12 @@ async fn rocket() -> _ {
             edit_profile, patch_edit_profile
             ,change_password,patch_change_password
             ,add_img
+        ])
+        .mount("api/items",routes![
+            get_item_api, get_items_api
+            ,delete_item_api, delete_item_img_api
+            ,create_category_api, item_create_api
+            ,item_edit_api, add_img_to_item_api
         ])
         .mount("/static", FileServer::from("static"))
         .mount("/uploads", FileServer::from(relative!("uploads")))

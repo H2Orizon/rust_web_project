@@ -19,6 +19,13 @@ pub async fn file_load<'r>(mut form_data: Form<UploadForm<'r>>, dir: &str) -> Re
         .and_then(|ct| ct.extension().map(|ext| ext.to_string()))
         .unwrap_or_else(|| "jpg".to_string());
 
+    let allowed_extensions = ["jpg", "jpeg", "png", "webp"];
+
+    if !allowed_extensions.contains(&file_extension.as_str()) {
+        eprintln!("Заборонене розширення файлу: {}", file_extension);
+        return Err(());
+    }
+
     let unique_filename = format!("{}.{}", Uuid::new_v4(), file_extension);
 
     let base_path = env::current_dir().unwrap();
@@ -53,11 +60,18 @@ pub async fn file_load_for_item<'r>(db:&sea_orm::DatabaseConnection,mut form_dat
         _ => {}
     }
     
+    let allowed_extensions = ["jpg", "jpeg", "png", "webp"];
+    
     let file_extension = form_data
         .file
         .content_type()
         .and_then(|ct| ct.extension().map(|ext| ext.to_string()))
         .unwrap_or_else(|| "jpg".to_string());
+
+    if !allowed_extensions.contains(&file_extension.as_str()) {
+        eprintln!("Заборонене розширення файлу: {}", file_extension);
+        return Err(());
+    }
 
     let unique_filename = format!("{}.{}", Uuid::new_v4(), file_extension);
 
