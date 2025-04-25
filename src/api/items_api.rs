@@ -5,14 +5,14 @@ use rocket::http::Status;
 use crate::{models::{category_model::{CategoryDTO, NewCategory}, img_for_item::ImgItemDTO, item_model::{ItemDTO, NewItemForm}}, 
 services::{help_service::{delete_image, file_load_for_item, UploadForm}, img_for_items_services::{add_img_to_item, delete_image_db, get_img_url_as_string}, item_service::{create_category_f, create_new_item, delete_item_f, get_all_item, get_one_item, update_item}, session::UserSession}};
 
-#[get("/items")]
-pub async fn get_items_api(db: &State<DatabaseConnection>) -> Result<Json<Vec<ItemDTO>>, Json<String>> {
+#[get("/")]
+pub async fn get_items_api(db: &State<DatabaseConnection>) -> Result<(Status, Json<Vec<ItemDTO>>), (Status, Json<String>)>{
     match get_all_item(db).await {
         Ok(items) => {
-            Ok(Json(items))
+            Ok((Status::Ok, Json(items)))
         }
         Err(e) => {
-            Err(Json(format!("Помилка отримання товарів: {}", e)))
+            Err((Status::BadRequest, Json(format!("Помилка отримання товарів: {}", e))))
         }
     }
 }
@@ -30,12 +30,12 @@ pub async fn create_category_api(db: &State<DatabaseConnection>, user_session: U
 }
 
 #[get("/<item_id>")]
-pub async fn get_item_api(db: &State<DatabaseConnection>, item_id: i32) -> Result<Json<ItemDTO>, Json<String>> {
+pub async fn get_item_api(db: &State<DatabaseConnection>, item_id: i32) -> Result<(Status, Json<ItemDTO>), (Status, Json<String>)> {
     match get_one_item(db, item_id).await {
         Ok(item) => {
-                Ok(Json(item))
+                Ok((Status::Ok ,Json(item)))
             }
-        Err(e) => Err(Json(e.to_string())),
+        Err(e) => Err((Status::BadRequest, Json(format!("Помилка отримання товару: {}, {}", item_id, e))))
     }
 }
 

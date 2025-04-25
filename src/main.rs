@@ -48,7 +48,7 @@ async fn rocket() -> _ {
             ,change_password,patch_change_password
             ,add_img
         ])
-        .mount("api/items/",routes![
+        .mount("/api/items/",routes![
             get_item_api, get_items_api
             ,delete_item_api, delete_item_img_api
             ,create_category_api, item_create_api
@@ -56,7 +56,7 @@ async fn rocket() -> _ {
             ,post_coments_api, delete_comment_api
             ,edit_comment_api
         ])
-        .mount("api/user/", routes![
+        .mount("/api/user/", routes![
             log_in_api,register_api
             ,change_password_api,get_user_api
             ,get_all_user_api,log_out_api
