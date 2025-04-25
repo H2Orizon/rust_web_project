@@ -57,25 +57,7 @@ pub async fn get_all_user_comments(db: &DatabaseConnection, user_id: i32) -> Res
     Ok(comment_dtos)
 }
 
-// pub async fn get_item_comment(db: &DatabaseConnection, comment_id: i32) -> Result<CommentDTO, sea_orm::DbErr>{
-//     let comment = CommentEntity::find_by_id(comment_id)
-//     .one(db).await?    
-//     .ok_or(sea_orm::DbErr::RecordNotFound(
-//         format!("Comment {} not found", comment_id),
-//     ))?;
-//     let user = comment.find_related(UserEntity).one(db).await?;
-//     let item = comment.find_related(ItemEntity).one(db).await?;
-//     Ok(CommentDTO {
-//         id: comment_id, 
-//         item_id: comment.item_id, 
-//         user_id: comment.user_id, 
-//         content: comment.content, 
-//         user_name: user.map(|u| u.username),
-//         item_name: item.map(|i| i.name), 
-//     })
-// }
-
-pub async fn updata_comment(db: &DatabaseConnection, comment_id: i32, form_data: &CommentForm) ->  Result<(), CommentError>{
+pub async fn updata_comment(db: &DatabaseConnection, comment_id: i32, form_data: &CommentForm) ->  Result<CommentDTO, CommentError>{
     form_data.validate().map_err(|e| CommentError::ValidationError(e))?;
 
     let comment = CommentEntity::find_by_id(comment_id)
@@ -86,11 +68,20 @@ pub async fn updata_comment(db: &DatabaseConnection, comment_id: i32, form_data:
     let mut updata_comment: ActiveModel = comment.into();
     updata_comment.content = Set( form_data.content.clone() );
 
-    updata_comment.update(db).await.map_err(CommentError::DatabaseError)?;
-    Ok(())
+    let inserted_comment = updata_comment.update(db).await.map_err(CommentError::DatabaseError)?;
+    let user = inserted_comment.find_related(UserEntity).one(db).await?;
+    let item = inserted_comment.find_related(ItemEntity).one(db).await?;
+    Ok(CommentDTO { 
+        id: inserted_comment.id,
+        user_id: inserted_comment.user_id,
+        item_id: inserted_comment.item_id,
+        user_name: user.map(|u| u.username),
+        item_name: item.map(|i| i.name),
+        content: inserted_comment.content
+    })
 }
 
-pub async fn create_comment(db: &DatabaseConnection, user_id: i32, item_id: i32, form_data: &CommentForm) -> Result<(), CommentError> {
+pub async fn create_comment(db: &DatabaseConnection, user_id: i32, item_id: i32, form_data: &CommentForm) -> Result<CommentDTO, CommentError> {
     form_data.validate().map_err(|e| CommentError::ValidationError(e))?;
 
     let new_comment = ActiveModel{
@@ -100,9 +91,18 @@ pub async fn create_comment(db: &DatabaseConnection, user_id: i32, item_id: i32,
         ..Default::default()
     };
     match new_comment.insert(db).await {
-        Ok(_) => {
-            println!("Товар успішно додана!");
-            Ok(())
+        Ok(dto) => {
+            let user = dto.find_related(UserEntity).one(db).await?;
+            let item = dto.find_related(ItemEntity).one(db).await?;
+            println!("Комент успішно додана!");
+            Ok(CommentDTO { 
+                id: dto.id, 
+                user_id: dto.user_id,
+                item_id: dto.item_id,
+                user_name: user.map(|u| u.username),
+                item_name: item.map(|i| i.name),
+                content: dto.content
+            })
         }Err(e) => {
             eprintln!(" Помилка під час вставки товарв: {:?}", e);
             Err(CommentError::DatabaseError(e))

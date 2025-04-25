@@ -1,5 +1,6 @@
 #[macro_use] extern crate rocket;
 
+use api::comment_api::{delete_comment_api, edit_comment_api, post_coments_api};
 use api::items_api::{add_img_to_item_api, create_category_api, delete_item_api, delete_item_img_api, get_item_api, get_items_api, item_create_api, item_edit_api};
 use controllers::comment_controller::{delete_comment, edit_comment, post_coments};
 use rocket::fs::{FileServer, relative};
@@ -51,6 +52,8 @@ async fn rocket() -> _ {
             ,delete_item_api, delete_item_img_api
             ,create_category_api, item_create_api
             ,item_edit_api, add_img_to_item_api
+            ,post_coments_api, delete_comment_api
+            ,edit_comment_api
         ])
         .mount("/static", FileServer::from("static"))
         .mount("/uploads", FileServer::from(relative!("uploads")))

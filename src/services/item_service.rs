@@ -76,7 +76,7 @@ pub async fn get_one_item(db: &DatabaseConnection, item_id: i32) -> Result<ItemD
         category: category, 
         price: item.price, 
         description: item.description, 
-        link_to: "".to_string(),
+        link_to: format!("/items/{}", item.id),
         user_id: item.user_id,
         imgs: img
     })
