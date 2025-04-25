@@ -114,7 +114,7 @@ pub async fn add_img_to_item_api<'r>(db: &State<DatabaseConnection>, item_id: i3
         Ok(name) => name,
         Err(_) => {
             eprintln!("Не вдалося зберегти файл");
-            return Err((Status::NotFound, Json("Товар не знайено або ви не маєте до нього доступу".to_string())));
+            return Err((Status::NotFound, Json("Не вдалося зберегти файл".to_string())));
         }
     };
     println!("Файл збережено в: {}", filename);

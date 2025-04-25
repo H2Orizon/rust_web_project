@@ -2,6 +2,7 @@
 
 use api::comment_api::{delete_comment_api, edit_comment_api, post_coments_api};
 use api::items_api::{add_img_to_item_api, create_category_api, delete_item_api, delete_item_img_api, get_item_api, get_items_api, item_create_api, item_edit_api};
+use api::user_api::{add_img_api, change_password_api, edit_profile_api, get_all_user_api, get_user_api, log_in_api, log_out_api, register_api};
 use controllers::comment_controller::{delete_comment, edit_comment, post_coments};
 use rocket::fs::{FileServer, relative};
 use controllers::items_controller::{create, create_category, delete_item, delete_item_img, get_item, get_items, item_edit, patch_item_edit, post_add_img_to_item, post_create, post_create_category};
@@ -47,13 +48,19 @@ async fn rocket() -> _ {
             ,change_password,patch_change_password
             ,add_img
         ])
-        .mount("api/items",routes![
+        .mount("api/items/",routes![
             get_item_api, get_items_api
             ,delete_item_api, delete_item_img_api
             ,create_category_api, item_create_api
             ,item_edit_api, add_img_to_item_api
             ,post_coments_api, delete_comment_api
             ,edit_comment_api
+        ])
+        .mount("api/user/", routes![
+            log_in_api,register_api
+            ,change_password_api,get_user_api
+            ,get_all_user_api,log_out_api
+            ,edit_profile_api, add_img_api
         ])
         .mount("/static", FileServer::from("static"))
         .mount("/uploads", FileServer::from(relative!("uploads")))

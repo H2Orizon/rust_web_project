@@ -30,7 +30,7 @@ fn verify_password(password: &str, hash: &str) -> bool {
     }
 }
 
-pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Result<(), UserError>{
+pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Result<UserDTO, UserError>{
     form_data.validate().map_err(|e| UserError::ValidationError(e))?;
 
     let salt = SaltString::generate(&mut OsRng);
@@ -48,9 +48,18 @@ pub async fn create_user(db: &DatabaseConnection, form_data: &NewUserForm) -> Re
     };
     println!("Вставка користувача: {:?}", new_user);
     match new_user.insert(db).await {
-        Ok(_) => {
+        Ok(dto) => {
             println!(" Користувач успішно доданий!");
-            Ok(())
+            Ok(UserDTO { 
+                id: dto.id, 
+                username: 
+                dto.username, 
+                email: dto.email, 
+                phone_num: 
+                dto.phone_num, role: 
+                dto.role, 
+                img_url: "".to_string()
+            })
         }
         Err(e) => {
             eprintln!(" Помилка під час вставки користувача: {:?}", e);
@@ -113,7 +122,7 @@ pub async fn get_all_users(db: &DatabaseConnection) -> Result<Vec<UserDTO>, sea_
     Ok(user_dtos)
 }
 
-pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &EditUserForm) -> Result<(), UserError>{
+pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &EditUserForm) -> Result<UserDTO, UserError>{
     form_data.validate().map_err(|e| UserError::ValidationError(e))?;
 
     let user = get_user(db, user_id).await?;
@@ -122,8 +131,15 @@ pub async fn edit_profile_f(db: &DatabaseConnection, user_id: i32, form_data: &E
     user_edit.phone_num = Set(form_data.phone_num.clone());
     user_edit.username = Set(form_data.username.clone());
     user_edit.role = Set(form_data.role.clone());
-    user_edit.update(db).await.map_err(UserError::DatabaseError)?;
-    Ok(())
+    let inserted_user = user_edit.update(db).await.map_err(UserError::DatabaseError)?;
+    Ok(UserDTO { 
+        id: inserted_user.id,
+        username: inserted_user.username,
+        email: inserted_user.email,
+        phone_num: inserted_user.phone_num,
+        role: inserted_user.role,
+        img_url: inserted_user.img_url
+    })
 }
 
 pub async fn get_user_dto(db: &DatabaseConnection, user_id: i32) -> Result<UserDTO, UserError> {
